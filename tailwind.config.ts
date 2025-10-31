@@ -10,31 +10,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
         card: {
-          DEFAULT: 'hsl(var(--card))',
-          fg: 'hsl(var(--card-fg))'
+          DEFAULT: 'var(--card)',
+          fg: 'var(--card-fg)'
         },
         muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          fg: 'hsl(var(--muted-fg))'
+          DEFAULT: 'var(--muted)',
+          fg: 'var(--muted-fg)'
         },
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          fg: 'hsl(var(--primary-fg))'
+          DEFAULT: 'var(--primary)',
+          fg: 'var(--primary-fg)'
         },
         secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          fg: 'hsl(var(--secondary-fg))'
+          DEFAULT: 'var(--secondary)',
+          fg: 'var(--secondary-fg)'
         },
         danger: {
-          DEFAULT: 'hsl(var(--danger))',
-          fg: 'hsl(var(--danger-fg))'
+          DEFAULT: 'var(--danger)',
+          fg: 'var(--danger-fg)'
         },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))'
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)'
       },
       borderRadius: {
         lg: 'var(--radius)',

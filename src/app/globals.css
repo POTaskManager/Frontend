@@ -6,53 +6,53 @@ html, body, :root { height: 100%; }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 47.4% 11.2%;
+    --background: #ffffff;
+    --foreground: #0b1220;
 
-    --card: 0 0% 100%;
-    --card-fg: 222.2 47.4% 11.2%;
+    --card: #ffffff;
+    --card-fg: #0b1220;
 
-    --muted: 210 40% 96.1%;
-    --muted-fg: 215.4 16.3% 46.9%;
+    --muted: #f1f5f9; /* slate-100 */
+    --muted-fg: #64748b; /* slate-500 */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 215 20.2% 65.1%;
+    --border: #e2e8f0; /* slate-200 */
+    --input: #e2e8f0;
+    --ring: #94a3b8; /* slate-400 */
 
-    --primary: 221.2 83.2% 53.3%;
-    --primary-fg: 210 40% 98%;
+    --primary: #3b82f6; /* blue-500 */
+    --primary-fg: #f8fafc; /* slate-50 */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-fg: 222.2 47.4% 11.2%;
+    --secondary: #f1f5f9; /* slate-100 */
+    --secondary-fg: #0b1220;
 
-    --danger: 0 84.2% 60.2%;
-    --danger-fg: 0 0% 100%;
+    --danger: #ef4444; /* red-500 */
+    --danger-fg: #ffffff;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: #0b1220; /* near-slate-950 */
+    --foreground: #e5e7eb; /* gray-200 */
 
-    --card: 222.2 84% 5.5%;
-    --card-fg: 210 40% 98%;
+    --card: #0f172a; /* slate-900 */
+    --card-fg: #e5e7eb;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-fg: 215 20.2% 65.1%;
+    --muted: #1f2937; /* gray-800 */
+    --muted-fg: #94a3b8; /* slate-400 */
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 215 20.2% 65.1%;
+    --border: #1f2937;
+    --input: #1f2937;
+    --ring: #94a3b8;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-fg: 222.2 47.4% 11.2%;
+    --primary: #60a5fa; /* blue-400 */
+    --primary-fg: #0b1220;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-fg: 210 40% 98%;
+    --secondary: #1f2937;
+    --secondary-fg: #e5e7eb;
 
-    --danger: 0 74% 50%;
-    --danger-fg: 0 0% 100%;
+    --danger: #dc2626; /* red-600 */
+    --danger-fg: #ffffff;
   }
 
   * {
