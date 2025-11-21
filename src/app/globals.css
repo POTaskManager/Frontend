@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, :root { height: 100%; }
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #0b1220;
+
+    --card: #ffffff;
+    --card-fg: #0b1220;
+
+    --muted: #f1f5f9; /* slate-100 */
+    --muted-fg: #64748b; /* slate-500 */
+
+    --border: #e2e8f0; /* slate-200 */
+    --input: #e2e8f0;
+    --ring: #94a3b8; /* slate-400 */
+
+    --primary: #3b82f6; /* blue-500 */
+    --primary-fg: #f8fafc; /* slate-50 */
+
+    --secondary: #f1f5f9; /* slate-100 */
+    --secondary-fg: #0b1220;
+
+    --danger: #ef4444; /* red-500 */
+    --danger-fg: #ffffff;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: #0b1220; /* near-slate-950 */
+    --foreground: #e5e7eb; /* gray-200 */
+
+    --card: #0f172a; /* slate-900 */
+    --card-fg: #e5e7eb;
+
+    --muted: #1f2937; /* gray-800 */
+    --muted-fg: #94a3b8; /* slate-400 */
+
+    --border: #1f2937;
+    --input: #1f2937;
+    --ring: #94a3b8;
+
+    --primary: #60a5fa; /* blue-400 */
+    --primary-fg: #0b1220;
+
+    --secondary: #1f2937;
+    --secondary-fg: #e5e7eb;
+
+    --danger: #dc2626; /* red-600 */
+    --danger-fg: #ffffff;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+

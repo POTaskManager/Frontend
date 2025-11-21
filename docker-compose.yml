@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: taskmanager-frontend:latest
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXTAUTH_URL: ${NEXTAUTH_URL-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET-change-me}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
