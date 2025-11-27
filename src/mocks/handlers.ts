@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { mockProjects, mockTasks, getTasksByProjectId } from './data';
+import type { Task } from '@/types';
 
 export const handlers = [
   http.post('/api/auth/login', async () => {
@@ -46,7 +47,7 @@ export const handlers = [
   }),
   http.patch('/api/tasks/:taskId', async ({ params, request }) => {
     const taskId = params.taskId as string;
-    const body = (await request.json()) as Partial<typeof mockTasks[0]>;
+    const body = (await request.json()) as Partial<Task>;
     
     // Find task and update it (in a real app, this would update a database)
     const taskIndex = mockTasks.findIndex((t) => t.id === taskId);
@@ -54,9 +55,9 @@ export const handlers = [
       return HttpResponse.json({ error: 'Task not found' }, { status: 404 });
     }
     
-    const updatedTask = { ...mockTasks[taskIndex], ...body };
+    const updatedTask = { ...mockTasks[taskIndex], ...body } as Task;
     mockTasks[taskIndex] = updatedTask;
-    
+
     return HttpResponse.json(updatedTask);
   }),
   http.get('/api/notifications', async () => HttpResponse.json([])),
