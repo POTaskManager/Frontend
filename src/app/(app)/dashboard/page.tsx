@@ -1,10 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import type { Route } from 'next';
+import { Button } from '@/components/ui/button';
+import { CreateProjectModal } from '@/components/projects/create-project-modal';
 
 export default function DashboardPage() {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
@@ -19,7 +23,10 @@ export default function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-8">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <Button onClick={() => setIsCreateModalOpen(true)}>Create Project</Button>
+      </div>
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <section className="rounded border p-4">
           <h2 className="font-medium">Projects</h2>
@@ -56,6 +63,7 @@ export default function DashboardPage() {
           </ul>
         </section>
       </div>
+      <CreateProjectModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
     </main>
   );
 }
