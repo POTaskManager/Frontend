@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { SessionProvider } from 'next-auth/react';
+import { Toaster } from 'react-hot-toast';
 import { Sidebar, type SidebarItem } from '@/components/ui/sidebar';
 import type { Route } from 'next';
 import { Topbar } from '@/components/ui/topbar';
@@ -22,6 +23,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <MswProvider />
       <QueryClientProvider client={queryClient}>
         <RequireAuth>
+          <Toaster position="top-right" />
           <Topbar />
           <div className="min-h-[calc(100vh-3.5rem)] md:flex">
             <Sidebar items={items} header={<span>Navigation</span>} />

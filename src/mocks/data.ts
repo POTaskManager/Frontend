@@ -244,3 +244,46 @@ export function getTasksByProjectId(projectId: string): Task[] {
 export function getBoardByProjectId(projectId: string): Board | undefined {
   return mockBoards.find((board) => board.projectId === projectId) || mockBoards[0];
 }
+
+/**
+ * Mock labels
+ */
+export interface Label {
+  label_id: string;
+  name: string;
+  color?: string;
+  project_id: string;
+}
+
+export const mockLabels: Label[] = [
+  { label_id: 'label-1', name: 'Bug', color: '#ef4444', project_id: 'project-1' },
+  { label_id: 'label-2', name: 'Feature', color: '#3b82f6', project_id: 'project-1' },
+  { label_id: 'label-3', name: 'Documentation', color: '#10b981', project_id: 'project-1' },
+  { label_id: 'label-4', name: 'Design', color: '#8b5cf6', project_id: 'project-1' },
+  { label_id: 'label-5', name: 'Urgent', color: '#f59e0b', project_id: 'project-1' }
+];
+
+/**
+ * Mock project members
+ */
+export interface ProjectMember {
+  user_id: string;
+  display_name: string;
+  email: string;
+  role: string;
+}
+
+export const mockProjectMembers: Record<string, ProjectMember[]> = {
+  'project-1': [
+    { user_id: 'user-1', display_name: 'Alice Johnson', email: 'alice@example.com', role: 'manager' },
+    { user_id: 'user-2', display_name: 'Bob Smith', email: 'bob@example.com', role: 'member' },
+    { user_id: 'user-3', display_name: 'Charlie Brown', email: 'charlie@example.com', role: 'member' }
+  ],
+  'project-2': [
+    { user_id: 'user-1', display_name: 'Alice Johnson', email: 'alice@example.com', role: 'manager' },
+    { user_id: 'user-3', display_name: 'Charlie Brown', email: 'charlie@example.com', role: 'member' }
+  ],
+  'project-3': [
+    { user_id: 'user-2', display_name: 'Bob Smith', email: 'bob@example.com', role: 'manager' }
+  ]
+};

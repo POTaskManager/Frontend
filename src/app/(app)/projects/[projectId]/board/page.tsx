@@ -3,9 +3,11 @@
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { Task } from './board.model';
 import { Column } from './components/column';
 import { canMoveTask } from './drag-rules';
+import { Button } from '@/components/ui/button';
 
 
 
@@ -85,7 +87,12 @@ export default function ProjectBoardPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-8">
-      <h1 className="text-2xl font-semibold">Kanban Board</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Kanban Board</h1>
+        <Link href={`/projects/${projectId}/tasks/create`}>
+          <Button>+ New task</Button>
+        </Link>
+      </div>
       <DndContext onDragEnd={onDragEnd}>
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
           {columns.map((state) => (
