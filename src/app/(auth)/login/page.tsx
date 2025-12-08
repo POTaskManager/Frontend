@@ -7,7 +7,7 @@ import { REDIRECT_PATH, useAuthStore } from '@/store/auth-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { Route } from 'next';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -20,7 +20,17 @@ type LoginValues = z.infer<typeof loginSchema>;
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
+
 export default function LoginPage() {
+  return (
+  <Suspense fallback={<main className="p-6">Loading…</main>}>
+    <LoginContent />
+  </Suspense>
+  )
+}
+
+
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
