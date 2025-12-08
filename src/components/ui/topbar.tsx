@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
-import Link from 'next/link';
+import { useAuthStore } from '@/store/auth-store';
 import { clsx } from 'clsx';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 export function Topbar() {
-  const { data: session } = useSession();
+  const { user, logout } = useAuthStore();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -18,8 +20,13 @@ export function Topbar() {
     return () => document.removeEventListener('mousedown', onDocClick);
   }, [open]);
 
-  const role = (session as any)?.user?.role as string | undefined;
-  const email = session?.user?.email ?? 'user';
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+
+  const role = user?.role;
+  const email = user?.email ?? 'user';
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -64,7 +71,7 @@ export function Topbar() {
                   </li>
                 ) : null}
                 <li>
-                  <button className="block w-full px-3 py-2 text-left hover:bg-muted" onClick={() => signOut({ callbackUrl: '/' })}>
+                  <button className="block w-full px-3 py-2 text-left hover:bg-muted" onClick={handleLogout}>
                     Logout
                   </button>
                 </li>
