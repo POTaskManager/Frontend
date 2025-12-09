@@ -1,14 +1,15 @@
 'use client';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
-import { SessionProvider } from 'next-auth/react';
-import { Toaster } from 'react-hot-toast';
-import { Sidebar, type SidebarItem } from '@/components/ui/sidebar';
-import type { Route } from 'next';
-import { Topbar } from '@/components/ui/topbar';
+
+import { AuthProvider } from '@/components/auth/auth-provider';
 import { RequireAuth } from '@/components/auth/require-auth';
 import { MswProvider } from '@/components/msw-provider';
+import { Sidebar, type SidebarItem } from '@/components/ui/sidebar';
+import { Topbar } from '@/components/ui/topbar';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { Route } from 'next';
+import { useState } from 'react';
+
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -19,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { href: '/admin/roles' as Route, label: 'Roles' }
   ];
   return (
-    <SessionProvider>
+    <AuthProvider>
       <MswProvider />
       <QueryClientProvider client={queryClient}>
         <RequireAuth>
@@ -31,7 +32,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </RequireAuth>
       </QueryClientProvider>
-    </SessionProvider>
+     </AuthProvider>
   );
 }
 
