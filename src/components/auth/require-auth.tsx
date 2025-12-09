@@ -1,27 +1,27 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useAuthStore } from '@/store/auth-store';
 import type { Route } from 'next';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { status } = useSession();
+  const { isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (!isLoading && !isAuthenticated) {
       const dest = (`/login?callbackUrl=${encodeURIComponent(pathname)}`) as Route;
       router.replace(dest);
     }
-  }, [status, pathname, router]);
+  }, [isAuthenticated, isLoading, pathname, router]);
 
-  if (status === 'loading') {
+  if (isLoading) {
     return <div className="p-4 text-sm text-muted-fg">Checking session…</div>;
   }
 
-  if (status === 'unauthenticated') return undefined;
+  if (!isAuthenticated) return undefined;
   return <>{children}</>;
 }
 
