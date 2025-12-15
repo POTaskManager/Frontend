@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// Server-side proxy uses BACKEND_URL (container network)
+const API_BASE_URL = process.env.BACKEND_URL || 'http://backend:4200';
 
 
 async function handleRequest(
@@ -11,23 +12,42 @@ async function handleRequest(
   const method = req.method;
   const body = method !== 'GET' && method !== 'HEAD' ? await req.text() : undefined;
 
+  const headersToSend = Object.fromEntries(
+    Array.from(req.headers.entries()).filter(([key]) => 
+      key.toLowerCase() !== 'host' && 
+      key.toLowerCase() !== 'connection' &&
+      key.toLowerCase() !== 'content-length'
+    )
+  );
+  
+  // Ensure Content-Type is set if not present
+  if (!headersToSend['content-type']) {
+    headersToSend['content-type'] = 'application/json';
+  }
+
   const res = await fetch(backendUrl, {
     method,
-    headers: {
-      cookie: req.headers.get('cookie') ?? '',
-      'Content-Type': 'application/json',
-      ...Object.fromEntries(
-        Array.from(req.headers.entries()).filter(([key]) => 
-          key.toLowerCase() !== 'host' && 
-          key.toLowerCase() !== 'cookie'
-        )
-      )
-    },
+    headers: headersToSend,
     body: body || undefined,
   });
 
-  const data = await res.json();
-  const response = NextResponse.json(data, { status: res.status });
+
+  // Handle different content types
+  const contentType = res.headers.get('content-type') || '';
+  let data;
+  let response;
+  
+  if (contentType.includes('application/json')) {
+    data = await res.json();
+    response = NextResponse.json(data, { status: res.status });
+  } else {
+    // For non-JSON responses (like plain text), return as-is
+    const text = await res.text();
+    response = new NextResponse(text, { 
+      status: res.status,
+      headers: { 'content-type': contentType }
+    });
+  }
   
   // Forward Set-Cookie headers from backend (important for cookie-based auth)
   res.headers.forEach((value, key) => {
