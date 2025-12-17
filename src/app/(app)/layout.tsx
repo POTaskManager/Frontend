@@ -9,6 +9,7 @@ import { Topbar } from '@/components/ui/topbar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Route } from 'next';
 import { useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

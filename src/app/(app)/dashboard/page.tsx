@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import type { Route } from 'next';
 
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { CreateProjectModal } from '@/components/projects/create-project-modal';
 
 export default function DashboardPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
