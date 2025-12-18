@@ -80,6 +80,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-1',
     boardId: 'board-1',
+    sprintId: 'sprint-1',
     title: 'Design user authentication flow',
     description: 'Create wireframes and user flows for login/signup pages',
     state: 'todo',
@@ -91,6 +92,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-2',
     boardId: 'board-1',
+    sprintId: 'sprint-1',
     title: 'Set up CI/CD pipeline',
     description: 'Configure GitHub Actions for automated testing and deployment',
     state: 'todo',
@@ -101,6 +103,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-3',
     boardId: 'board-1',
+    sprintId: 'sprint-2',
     title: 'Write API documentation',
     description: 'Document all REST endpoints with examples and schemas',
     state: 'todo',
@@ -110,6 +113,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-4',
     boardId: 'board-2',
+    sprintId: 'sprint-3',
     title: 'Research color palette',
     description: 'Explore modern color schemes for mobile application',
     state: 'todo',
@@ -121,6 +125,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-5',
     boardId: 'board-1',
+    sprintId: 'sprint-1',
     title: 'Implement payment gateway',
     description: 'Integrate Stripe API for processing payments',
     state: 'in_progress',
@@ -132,6 +137,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-6',
     boardId: 'board-1',
+    sprintId: 'sprint-2',
     title: 'Build dashboard component',
     description: 'Create reusable dashboard component with charts and metrics',
     state: 'in_progress',
@@ -142,6 +148,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-7',
     boardId: 'board-2',
+    sprintId: 'sprint-3',
     title: 'Design mobile navigation',
     description: 'Create navigation patterns for mobile responsive design',
     state: 'in_progress',
@@ -153,6 +160,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-8',
     boardId: 'board-1',
+    sprintId: 'sprint-1',
     title: 'Code review: User management module',
     description: 'Review PR #123 for user management features',
     state: 'review',
@@ -163,6 +171,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-9',
     boardId: 'board-1',
+    sprintId: 'sprint-2',
     title: 'QA: Test checkout flow',
     description: 'Perform end-to-end testing of the checkout process',
     state: 'review',
@@ -173,6 +182,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-10',
     boardId: 'board-3',
+    sprintId: 'sprint-4',
     title: 'Review API security',
     description: 'Audit API endpoints for security vulnerabilities',
     state: 'review',
@@ -184,6 +194,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-11',
     boardId: 'board-1',
+    sprintId: 'sprint-1',
     title: 'Setup project repository',
     description: 'Initialize Git repo and configure project structure',
     state: 'done',
@@ -194,6 +205,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-12',
     boardId: 'board-1',
+    sprintId: 'sprint-1',
     title: 'Create database schema',
     description: 'Design and implement initial database schema',
     state: 'done',
@@ -204,6 +216,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-13',
     boardId: 'board-2',
+    sprintId: 'sprint-3',
     title: 'Create logo variations',
     description: 'Design multiple logo variations for brand identity',
     state: 'done',
@@ -214,6 +227,7 @@ export const mockTasks: Task[] = [
   {
     id: 'task-14',
     boardId: 'board-1',
+    sprintId: 'sprint-2',
     title: 'Configure development environment',
     description: 'Set up local development environment with all dependencies',
     state: 'done',
@@ -243,4 +257,48 @@ export function getTasksByProjectId(projectId: string): Task[] {
  */
 export function getBoardByProjectId(projectId: string): Board | undefined {
   return mockBoards.find((board) => board.projectId === projectId) || mockBoards[0];
+}
+
+// Mock sprints per project
+export const mockSprints: import('@/types').Sprint[] = [
+  {
+    id: 'sprint-1',
+    projectId: 'project-1',
+    name: 'Sprint 1',
+    startDate: '2024-02-01T00:00:00Z',
+    endDate: '2024-02-14T23:59:59Z',
+    goal: 'Initial features'
+  },
+  {
+    id: 'sprint-2',
+    projectId: 'project-1',
+    name: 'Sprint 2',
+    startDate: '2024-02-15T00:00:00Z',
+    endDate: '2024-02-28T23:59:59Z',
+  },
+  {
+    id: 'sprint-3',
+    projectId: 'project-2',
+    name: 'Sprint A',
+    startDate: '2024-02-01T00:00:00Z',
+    endDate: '2024-02-14T23:59:59Z',
+  },
+  {
+    id: 'sprint-4',
+    projectId: 'project-3',
+    name: 'Sprint X',
+    startDate: '2024-02-01T00:00:00Z',
+    endDate: '2024-02-14T23:59:59Z',
+  }
+];
+
+export function getSprintsByProjectId(projectId: string) {
+  return mockSprints.filter((s) => s.projectId === projectId);
+}
+
+/**
+ * Get tasks by sprint ID
+ */
+export function getTasksBySprintId(sprintId: string): Task[] {
+  return mockTasks.filter((task) => task.sprintId === sprintId);
 }
