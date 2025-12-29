@@ -6,10 +6,12 @@ import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
 
 export type SidebarItem = {
-  href: Route;
+  href?: Route;
   label: string;
   icon?: React.ReactNode;
   badgeCount?: number;
+  isSubItem?: boolean;
+  isHeader?: boolean;
 };
 
 export function Sidebar({ items, header }: { items: SidebarItem[]; header?: React.ReactNode }) {
@@ -18,14 +20,26 @@ export function Sidebar({ items, header }: { items: SidebarItem[]; header?: Reac
     <aside className="hidden w-64 shrink-0 border-r bg-card p-4 md:block">
       {header ? <div className="mb-4 px-2 text-sm font-semibold text-muted-fg">{header}</div> : null}
       <nav className="space-y-1">
-        {items.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+        {items.map((item, index) => {
+          if (item.isHeader) {
+            return (
+              <div
+                key={`header-${index}`}
+                className="mt-4 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-fg"
+              >
+                {item.label}
+              </div>
+            );
+          }
+          
+          const isActive = item.href && (pathname === item.href || pathname.startsWith(item.href + '/'));
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={item.href!}
               className={clsx(
-                'group flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors',
+                'group flex items-center justify-between rounded-md py-2 text-sm transition-colors',
+                item.isSubItem ? 'pl-6 pr-3' : 'px-3',
                 isActive ? 'bg-primary text-primary-fg' : 'text-foreground hover:bg-muted'
               )}
             >
