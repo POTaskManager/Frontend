@@ -109,7 +109,7 @@ export const handlers = [
 
   http.patch('/api/proxy/api/projects/:projectId/tasks/:id', async ({ params, request }) => {
     const id = params.id as string;
-    const body = await request.json();
+    const body = await request.json() as any;
     const statusId = body?.statusId as UITask['state'] | undefined;
 
     const idx = mockTasks.findIndex((t) => t.id === id);
@@ -120,7 +120,7 @@ export const handlers = [
       mockTasks[idx] = { ...mockTasks[idx], state: statusId } as UITask;
     }
     const projectId = normalizeProjectId(params.projectId as string);
-    return HttpResponse.json(toBackendTask(mockTasks[idx], projectId));
+    return HttpResponse.json(toBackendTask(mockTasks[idx]!, projectId));
   }),
 
   // New: sprints per project

@@ -61,7 +61,7 @@ export default function ProjectBoardPage() {
   // Auto-select first sprint and update URL if no sprint is selected
   useEffect(() => {
     if (!selectedSprintId && sprints.length > 0) {
-      const firstSprintId = sprints[0].id;
+      const firstSprintId = sprints[0]?.id;
       router.replace(`/projects/${projectId}/board?sprint=${firstSprintId}`);
     }
   }, [sprints, selectedSprintId, router, projectId]);
