@@ -6,16 +6,22 @@ import { canMoveTask } from './drag-rules';
 import { useBoardFacade } from './board-facade';
 import { Task } from '@/features/projects';
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Route } from 'next';
 
 export default function ProjectBoardPage() {
-  const { tasks, sprints, isLoading, error, selectedSprintId, projectId, changeSprint, updateTask } =
-    useBoardFacade();
+  const {
+    tasks,
+    sprints,
+    isLoading,
+    error,
+    selectedSprintId,
+    projectId,
+    changeSprint,
+    updateTask,
+    createTask,
+  } = useBoardFacade();
 
-  //TODO - to be moved to facade
-  const queryClient = useQueryClient();
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
@@ -32,28 +38,19 @@ export default function ProjectBoardPage() {
 
     setIsCreatingTask(true);
     try {
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/tasks`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          title: newTaskTitle,
-          description: newTaskDescription || undefined,
-          priority: newTaskPriority,
-          state: newTaskState,
-          sprintId: selectedSprintId,
-        }),
+      await createTask({
+        title: newTaskTitle,
+        description: newTaskDescription || undefined,
+        priority: newTaskPriority,
+        state: newTaskState,
+        sprintId: selectedSprintId,
       });
-
-      if (!res.ok) throw new Error('Failed to create task');
 
       setShowCreateTask(false);
       setNewTaskTitle('');
       setNewTaskDescription('');
       setNewTaskPriority('medium');
       setNewTaskState('todo');
-
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId, selectedSprintId] });
     } catch (error) {
       console.error('Error creating task:', error);
       alert('Failed to create task');

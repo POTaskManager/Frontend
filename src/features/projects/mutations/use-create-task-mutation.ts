@@ -1,0 +1,37 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { BackendTask, mapFromBackend } from '../types';
+
+export type CreateTaskInput = {
+  title: string;
+  description?: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  state: string;
+  sprintId: string;
+};
+
+export function useCreateTaskMutation(projectId: string, selectedSprintId: string | null) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: CreateTaskInput) => {
+      const res = await fetch(`/api/proxy/api/projects/${projectId}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          title: input.title,
+          description: input.description || undefined,
+          priority: input.priority,
+          state: input.state,
+          sprintId: input.sprintId,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to create task');
+      const created: BackendTask = await res.json();
+      return mapFromBackend(created);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId, selectedSprintId] });
+    },
+  });
+}
