@@ -19,7 +19,7 @@ interface BackendTask {
   status: 'todo' | 'in_progress' | 'review' | 'done';
   priority: string | null;
   dueAt: string | null;
-  assignedTo: string | null;
+  assignedTo?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,7 +41,7 @@ function toBackendTask(t: UITask, projectIdHint?: string): BackendTask {
     status: t.status,
     priority: t.priority || null,
     dueAt: t.dueDate || null,
-    assignedTo: t.assigneeId || null,
+    assignedTo: t.assigneeId,
     createdAt,
     updatedAt,
   };
@@ -141,27 +141,27 @@ export const handlers = [
     const url = new URL(request.url);
     const boardId = url.searchParams.get('boardId');
     const projectId = url.searchParams.get('projectId');
-    
+
     if (projectId) {
       return HttpResponse.json(getTasksByProjectId(projectId));
     }
-    
+
     if (boardId) {
       const tasks = mockTasks.filter((task) => task.boardId === boardId);
       return HttpResponse.json(tasks);
     }
-    
+
     return HttpResponse.json(mockTasks);
   }),
   http.patch('/api/tasks/:taskId', async ({ params, request }) => {
     const taskId = params.taskId as string;
     const body = (await request.json()) as Partial<UITask>;
-    
+
     const taskIndex = mockTasks.findIndex((t) => t.id === taskId);
     if (taskIndex === -1) {
       return HttpResponse.json({ error: 'Task not found' }, { status: 404 });
     }
-    
+
     const updatedTask = { ...mockTasks[taskIndex], ...body } as UITask;
     mockTasks[taskIndex] = updatedTask;
 
