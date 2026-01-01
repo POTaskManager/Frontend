@@ -97,7 +97,7 @@ function LoginContent() {
   };
 
   const handleGoogleLogin = () => {
-    const callbackUrl = `${window.location.origin}`;
+    const callbackUrl = `${window.location.origin}/dashboard`;
     window.location.href = `${API_BASE_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(callbackUrl)}`;
   };
 
