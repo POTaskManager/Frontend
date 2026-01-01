@@ -16,7 +16,7 @@ interface BackendTask {
   createdBy: string;
   title: string;
   description: string | null;
-  statusId: 'todo' | 'in_progress' | 'review' | 'done';
+  status: 'todo' | 'in_progress' | 'review' | 'done';
   priority: string | null;
   dueAt: string | null;
   assignedTo: string | null;
@@ -38,7 +38,7 @@ function toBackendTask(t: UITask, projectIdHint?: string): BackendTask {
     createdBy: 'user-1',
     title: t.title,
     description: t.description || null,
-    statusId: t.state,
+    status: t.status,
     priority: t.priority || null,
     dueAt: t.dueDate || null,
     assignedTo: t.assigneeId || null,
@@ -110,14 +110,14 @@ export const handlers = [
   http.patch('/api/proxy/api/projects/:projectId/tasks/:id', async ({ params, request }) => {
     const id = params.id as string;
     const body = await request.json() as any;
-    const statusId = body?.statusId as UITask['state'] | undefined;
+    const statusId = body?.status as UITask['status'] | undefined;
 
     const idx = mockTasks.findIndex((t) => t.id === id);
     if (idx === -1) {
       return HttpResponse.json({ error: 'Task not found' }, { status: 404 });
     }
     if (statusId) {
-      mockTasks[idx] = { ...mockTasks[idx], state: statusId } as UITask;
+      mockTasks[idx] = { ...mockTasks[idx], status: statusId } as UITask;
     }
     const projectId = normalizeProjectId(params.projectId as string);
     return HttpResponse.json(toBackendTask(mockTasks[idx]!, projectId));

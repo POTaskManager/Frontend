@@ -48,7 +48,7 @@ export interface Task {
   boardId: string;
   title: string;
   description?: string;
-  state: 'todo' | 'in_progress' | 'review' | 'done';
+  status: 'todo' | 'in_progress' | 'review' | 'done';
   assigneeId?: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
   dueDate?: string;
