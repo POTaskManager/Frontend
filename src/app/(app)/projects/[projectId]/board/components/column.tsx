@@ -1,12 +1,12 @@
 'use client';
 
 import { useDroppable, useDndContext } from '@dnd-kit/core';
-import { Task } from '../board.model';
 import { Item } from './item';
 import { canMoveTask } from '../drag-rules';
+import { Task } from '@/features/projects';
 
 interface ColumnProps {
-  id: Task['state'];
+  id: Task['status'];
   title: string;
   tasks: Task[];
   allTasks: Task[]; // All tasks for validation
@@ -21,7 +21,7 @@ export function Column({ id, title, tasks, allTasks }: ColumnProps) {
     : undefined;
 
   // Check if drop is allowed based on drag rules
-  const isDropAllowed = draggedTask ? canMoveTask(draggedTask.state, id) : true;
+  const isDropAllowed = draggedTask ? canMoveTask(draggedTask.status, id) : true;
 
   const { setNodeRef, isOver } = useDroppable({
     id,
