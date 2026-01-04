@@ -12,14 +12,18 @@ RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 FROM ${BASE_IMAGE} AS builder
 ENV NODE_ENV=production
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN echo "Building with NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}" && npm run build
 
 FROM ${BASE_IMAGE} AS runner
+ARG NEXT_PUBLIC_API_URL
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
+    NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
     PORT=3000
 WORKDIR /app
 

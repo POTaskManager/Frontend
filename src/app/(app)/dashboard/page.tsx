@@ -1,24 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useProjectStore } from '@/store/project-store';
 import type { Route } from 'next';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function DashboardPage() {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { data: projects = [] } = useQuery({
-    queryKey: ['projects'],
-    queryFn: async () => {
-      const res = await fetch('/api/projects');
-      if (!res.ok) throw new Error('Failed to fetch projects');
-      return res.json();
-    }
-  });
-  const { data: myTasks = [] } = useQuery({ queryKey: ['tasks', 'mine'], queryFn: async () => [] });
-  const { data: notifications = [] } = useQuery({ queryKey: ['notifications'], queryFn: async () => [] });
-  const { data: activity = [] } = useQuery({ queryKey: ['activity'], queryFn: async () => [] });
+  const { projects, projectsLoading, fetchProjects } = useProjectStore();
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Placeholder for future features
+  const myTasks: never[] = [];
+  const notifications: never[] = [];
+  const activity: never[] = [];
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-8">
@@ -30,10 +27,12 @@ export default function DashboardPage() {
         <section className="rounded border p-4">
           <h2 className="font-medium">Projects</h2>
           <ul className="mt-2 space-y-2 text-sm">
-            {projects.length === 0 ? (
+            {projectsLoading ? (
+              <li className="text-muted-fg">Loading projects...</li>
+            ) : projects.length === 0 ? (
               <li className="text-muted-fg">No projects</li>
             ) : (
-              projects.map((p: { id: string; name: string }) => (
+              projects.map((p) => (
                 <li key={p.id}>
                   <Link href={`/projects/${p.id}/board` as Route} className="text-primary hover:underline">
                     {p.name}

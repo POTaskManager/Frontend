@@ -8,17 +8,32 @@ import { Sidebar, type SidebarItem } from '@/components/ui/sidebar';
 import { Topbar } from '@/components/ui/topbar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Route } from 'next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useProjectStore } from '@/store/project-store';
 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
+  const { projects, fetchProjects } = useProjectStore();
+
+  useEffect(() => {
+    if (!projects.length) {
+      fetchProjects();
+    }
+  }, [fetchProjects]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const items: SidebarItem[] = [
     { href: '/dashboard' as Route, label: 'Dashboard' },
-    { href: '/projects/project-1/board' as Route, label: 'Board' },
+    ...(projects.length > 0 ? [{ label: 'Projects', isHeader: true }] : []),
+    ...projects.map((project) => ({
+      href: `/projects/${project.id}/board` as Route,
+      label: project.name,
+      isSubItem: true
+    })),
     { href: '/admin/users' as Route, label: 'Users' },
     { href: '/admin/roles' as Route, label: 'Roles' }
   ];
+
   return (
     <AuthProvider>
       <MswProvider />
@@ -32,7 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </RequireAuth>
       </QueryClientProvider>
-     </AuthProvider>
+    </AuthProvider>
   );
 }
 

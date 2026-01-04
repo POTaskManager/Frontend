@@ -1,55 +1,20 @@
 'use client';
 
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { Task } from './board.model';
 import { Column } from './components/column';
 import { canMoveTask } from './drag-rules';
-import { Button } from '@/components/ui/button';
-
-
+import { useBoardFacade } from './board-facade';
+import { Task } from '@/features/projects';
 
 export default function ProjectBoardPage() {
-  const params = useParams();
-  const projectId = params.projectId as string;
-  const qc = useQueryClient();
-  
-  const { data: tasks = [], isLoading, error } = useQuery<Task[]>({
-    queryKey: ['board', 'tasks', projectId],
-    queryFn: async () => {
-      const res = await fetch(`/api/projects/${projectId}/board/tasks`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch tasks');
-      const data = await res.json();
-      console.log('Fetched tasks:', data);
-      return data;
-    }
-  });
-  
-  const mutation = useMutation({
-    mutationFn: async ({ id, state }: { id: string; state: Task['state'] }) => {
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ state })
-      });
-      if (!res.ok) throw new Error('Failed to update task');
-      return res.json();
-    },
-    onSuccess: ({ id, state }) => {
-      qc.setQueryData<Task[]>(['board', 'tasks', projectId], (old = []) =>
-        old.map((t) => (t.id === id ? { ...t, state } : t))
-      );
-    }
-  });
+  const { tasks, sprints, isLoading, error, selectedSprintId, changeSprint, updateTask } =
+    useBoardFacade();
 
   if (isLoading) {
     return (
       <main className="mx-auto max-w-7xl px-6 py-8">
         <h1 className="text-2xl font-semibold">Kanban Board</h1>
-        <div className="mt-6">Loading tasks...</div>
+        <div className="mt-6">Loading...</div>
       </main>
     );
   }
@@ -58,40 +23,55 @@ export default function ProjectBoardPage() {
     return (
       <main className="mx-auto max-w-7xl px-6 py-8">
         <h1 className="text-2xl font-semibold">Kanban Board</h1>
-        <div className="mt-6 text-red-600">Error loading tasks: {error.message}</div>
+        <div className="mt-6 text-red-600">Error loading board: {error.message}</div>
       </main>
     );
   }
 
-  const columns: Task['state'][] = ['todo', 'in_progress', 'review', 'done'];
-  
+  const columns: Task['status'][] = ['todo', 'in_progress', 'review', 'done'];
+
   const onDragEnd = (e: DragEndEvent) => {
     const taskId = e.active.id as string;
-    const targetColumn = e.over?.id as Task['state'] | undefined;
-    
+    const targetColumn = e.over?.id as Task['status'] | undefined;
+
     if (!targetColumn) return;
-    
-    // Find the task being dragged
+
     const draggedTask = tasks.find((t) => t.id === taskId);
     if (!draggedTask) return;
-    
-    // Validate the transition using drag rules
-    if (!canMoveTask(draggedTask.state, targetColumn)) {
-      console.warn(`Cannot move task from ${draggedTask.state} to ${targetColumn}`);
+
+    if (!canMoveTask(draggedTask.status, targetColumn)) {
+      console.warn(`Cannot move task from ${draggedTask.status} to ${targetColumn}`);
       return;
     }
-    
-    // Only mutate if validation passes
-    mutation.mutate({ id: taskId, state: targetColumn });
+    updateTask(taskId, targetColumn);
   };
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-8">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Kanban Board</h1>
-        <Link href={`/projects/${projectId}/tasks/create`}>
-          <Button>+ New task</Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <label htmlFor="sprint" className="text-sm text-gray-600">
+            Sprint
+          </label>
+          <select
+            id="sprint"
+            className="rounded border px-2 py-1 text-sm"
+            value={selectedSprintId || ''}
+            onChange={(e) => {
+              const sprintId = e.target.value;
+              if (sprintId) {
+                changeSprint(sprintId);
+              }
+            }}
+          >
+            {sprints.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <DndContext onDragEnd={onDragEnd}>
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -100,7 +80,7 @@ export default function ProjectBoardPage() {
               key={state}
               id={state}
               title={titleFor(state)}
-              tasks={tasks.filter((t) => t.state === state)}
+              tasks={tasks.filter((t) => t.status === state)}
               allTasks={tasks}
             />
           ))}
@@ -110,9 +90,7 @@ export default function ProjectBoardPage() {
   );
 }
 
-function titleFor(s: Task['state']) {
+function titleFor(s: Task['status']) {
   if (s === 'in_progress') return 'In Progress';
   return s[0]?.toUpperCase() + s.slice(1);
 }
-
-

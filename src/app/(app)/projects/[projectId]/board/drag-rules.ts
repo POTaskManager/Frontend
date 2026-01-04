@@ -1,6 +1,6 @@
-import { Task } from './board.model';
+import { Task } from '@/features/projects';
 
-export type TaskState = Task['state'];
+export type TaskState = Task['status'];
 
 /**
  * Configuration for drag and drop rules

@@ -1,1 +1,0 @@
-export type Task = { id: string; title: string; state: 'todo' | 'in_progress' | 'review' | 'done' };
