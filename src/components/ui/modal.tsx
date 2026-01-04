@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
-import { Button } from './button';
 
 export interface ModalProps {
   isOpen: boolean;

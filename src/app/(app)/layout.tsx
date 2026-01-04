@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Route } from 'next';
 import { useState, useEffect } from 'react';
 import { useProjectStore } from '@/store/project-store';
+import { Toaster } from 'react-hot-toast';
 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

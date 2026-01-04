@@ -6,8 +6,12 @@ import {
   mockBoards,
   getSprintsByProjectId,
   getTasksBySprintId,
+  mockLabels,
+  mockProjectMembers,
+  mockSprints,
+  mockUserCredentials,
 } from './data';
-import type { Task as UITask } from '@/types';
+import type { Task as UITask, Task, Project } from '@/types';
 
 // Backend-like Task shape expected by the proxy-backed frontend
 interface BackendTask {
@@ -53,20 +57,39 @@ function normalizeProjectId(projectId: string): string {
 
 export const handlers = [
   // Existing auth mocks
-  // http.post('/api/auth/login', async () => {
-  //   return HttpResponse.json({ ok: true });
-  // }),
-  // http.get('/api/auth/session', async () => {
-  //   return HttpResponse.json({ user: { email: 'member@example.com', role: 'member' } });
-  // }),
-  //
-  // // New: minimal handlers for proxy-based auth endpoints used by the app
-  // http.get('/api/proxy/api/auth/me', async () => {
-  //   return HttpResponse.json({ user: { id: 'user-1', email: 'member@example.com', name: 'Member', role: 'admin' } });
-  // }),
-  // http.post('/api/proxy/api/auth/logout', async () => {
-  //   return HttpResponse.json({ ok: true });
-  // }),
+  http.post('/api/auth/login', async ({ request }) => {
+    const body = await request.json() as { email: string; password: string };
+    
+    const userCredential = mockUserCredentials.find(
+      cred => cred.email === body.email && cred.password === body.password
+    );
+    
+    if (!userCredential) {
+      return HttpResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+    }
+    
+    return HttpResponse.json({ ok: true });
+  }),
+  http.get('/api/auth/session', async () => {
+    return HttpResponse.json({ user: { email: 'member@example.com', role: 'member' } });
+  }),
+  http.get('/api/auth/me', async () => {
+    return HttpResponse.json({ user: { id: 'user-1', email: 'member@example.com', name: 'Member', role: 'admin' } });
+  }),
+  http.post('/api/auth/logout', async () => {
+    return HttpResponse.json({ ok: true });
+  }),
+
+  // New: minimal handlers for proxy-based auth endpoints used by the app
+  http.post('/api/proxy/api/auth/login', async () => {
+    return HttpResponse.json({ ok: true });
+  }),
+  http.get('/api/proxy/api/auth/me', async () => {
+    return HttpResponse.json({ user: { id: 'user-1', email: 'member@example.com', name: 'Member', role: 'admin' } });
+  }),
+  http.post('/api/proxy/api/auth/logout', async () => {
+    return HttpResponse.json({ ok: true });
+  }),
 
   // Projects (legacy)
   http.get('/api/projects', async () => {
@@ -122,14 +145,38 @@ export const handlers = [
     const projectId = normalizeProjectId(params.projectId as string);
     return HttpResponse.json(toBackendTask(mockTasks[idx]!, projectId));
   }),
+  http.patch('/api/projects/:projectId/tasks/:id', async ({ params, request }) => {
+    const id = params.id as string;
+    const body = await request.json() as any;
+    const statusId = body?.status as UITask['status'] | undefined;
+
+    const idx = mockTasks.findIndex((t) => t.id === id);
+    if (idx === -1) {
+      return HttpResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+    if (statusId) {
+      mockTasks[idx] = { ...mockTasks[idx], status: statusId } as UITask;
+    }
+    const projectId = normalizeProjectId(params.projectId as string);
+    return HttpResponse.json(toBackendTask(mockTasks[idx]!, projectId));
+  }),
 
   // New: sprints per project
+  http.get('/api/projects/:projectId/sprints', async ({ params }) => {
+    const projectId = normalizeProjectId(params.projectId as string);
+    return HttpResponse.json(getSprintsByProjectId(projectId));
+  }),
   http.get('/api/proxy/api/projects/:projectId/sprints', async ({ params }) => {
     const projectId = normalizeProjectId(params.projectId as string);
     return HttpResponse.json(getSprintsByProjectId(projectId));
   }),
 
   // New: tasks per sprint
+  http.get('/api/projects/:projectId/sprints/:sprintId/tasks', async ({ params }) => {
+    const sprintId = params.sprintId as string;
+    const tasks = getTasksBySprintId(sprintId).map((t) => toBackendTask(t));
+    return HttpResponse.json(tasks);
+  }),
   http.get('/api/proxy/api/projects/:projectId/sprints/:sprintId/tasks', async ({ params }) => {
     const sprintId = params.sprintId as string;
     const tasks = getTasksBySprintId(sprintId).map((t) => toBackendTask(t));
@@ -201,6 +248,7 @@ export const handlers = [
       priority?: number;
       due_at?: string;
       assigned_to?: string;
+      sprint_id?: string;
       label_ids?: string[];
       estimate?: number;
     };
@@ -224,7 +272,7 @@ export const handlers = [
     }
 
     // Get board for project
-    const board = getBoardByProjectId(projectId);
+    const board = mockBoards.find((b) => b.projectId === projectId) || mockBoards[0];
     if (!board) {
       return HttpResponse.json({ error: 'Board not found for project' }, { status: 404 });
     }
@@ -243,10 +291,11 @@ export const handlers = [
       boardId: board.id,
       title: body.title,
       description: body.description,
-      state: 'todo',
+      status: 'todo',
       priority: body.priority ? priorityMap[body.priority] || 'medium' : 'medium',
       assigneeId: body.assigned_to,
       dueDate: body.due_at,
+      sprintId: body.sprint_id,
       tags: body.label_ids || []
     };
 
@@ -293,7 +342,7 @@ export const handlers = [
     const emails = body.members.map((m) => m.email.toLowerCase());
     const duplicates = emails.filter((email, index) => emails.indexOf(email) !== index);
     if (duplicates.length > 0) {
-      return HttpResponse.json({ error: `Duplicate emails: ${[...new Set(duplicates)].join(', ')}` }, { status: 400 });
+      return HttpResponse.json({ error: `Duplicate emails: ${Array.from(new Set(duplicates)).join(', ')}` }, { status: 400 });
     }
 
     // Create project
@@ -312,6 +361,23 @@ export const handlers = [
       name: 'Main Board'
     };
     mockBoards.push(newBoard);
+
+    // Create default sprint for project
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - startDate.getDay() + 1); // Monday of current week
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 13); // Two weeks later (Friday)
+
+    const newSprint = {
+      id: `sprint-${Date.now()}`,
+      projectId: newProject.id,
+      name: 'Sprint 1',
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      goal: 'Initial sprint'
+    };
+    mockSprints.push(newSprint);
 
     // Simulate invitation sending (some may fail)
     const invitations = body.members.map((member) => {
@@ -332,38 +398,12 @@ export const handlers = [
         };
       }
 
-      // Add to mockProjectMembers
-      if (!mockProjectMembers[newProject.id]) {
-        mockProjectMembers[newProject.id] = [];
-      }
-
-      const roleMap: Record<'member' | 'tester' | 'client', string> = {
-        member: 'member',
-        tester: 'member', // Map tester to member for now
-        client: 'member' // Map client to member for now
-      };
-
-      const emailParts = member.email.split('@');
-      const displayName = emailParts[0] || member.email;
-      const mappedRole = roleMap[member.role] || 'member';
-
-      const membersArray = mockProjectMembers[newProject.id];
-      if (membersArray) {
-        membersArray.push({
-          user_id: `user-${Date.now()}-${Math.random()}`,
-          display_name: displayName,
-          email: member.email,
-          role: mappedRole
-        });
-      }
-
       return {
         email: member.email,
         success: true
       };
     });
 
-    const successCount = invitations.filter((inv) => inv.success).length;
     const failureCount = invitations.filter((inv) => !inv.success).length;
 
     // Return 207 if there are any failures, 201 if all succeeded

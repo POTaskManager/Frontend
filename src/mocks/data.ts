@@ -31,6 +31,39 @@ export const mockUsers: User[] = [
 ];
 
 /**
+ * Mock user credentials for authentication
+ */
+export const mockUserCredentials = [
+  {
+    email: 'alice@example.com',
+    password: 'password123',
+    user: mockUsers[0]
+  },
+  {
+    email: 'bob@example.com',
+    password: 'password123',
+    user: mockUsers[1]
+  },
+  {
+    email: 'charlie@example.com',
+    password: 'password123',
+    user: mockUsers[2]
+  },
+  {
+    email: 'member@example.com',
+    password: 'password123',
+    user: {
+      id: 'user-1',
+      name: 'Member',
+      email: 'member@example.com',
+      roleId: 'role-1',
+      status: 'active',
+      createdAt: '2024-01-15T10:00:00Z'
+    }
+  }
+];
+
+/**
  * Mock projects
  */
 export const mockProjects: Project[] = [
@@ -302,3 +335,81 @@ export function getSprintsByProjectId(projectId: string) {
 export function getTasksBySprintId(sprintId: string): Task[] {
   return mockTasks.filter((task) => task.sprintId === sprintId);
 }
+
+/**
+ * Mock labels
+ */
+export const mockLabels = [
+  {
+    label_id: 'label-1',
+    name: 'frontend',
+    color: '#3B82F6',
+    project_id: 'project-1'
+  },
+  {
+    label_id: 'label-2',
+    name: 'backend',
+    color: '#10B981',
+    project_id: 'project-1'
+  },
+  {
+    label_id: 'label-3',
+    name: 'ui',
+    color: '#F59E0B',
+    project_id: 'project-1'
+  },
+  {
+    label_id: 'label-4',
+    name: 'bug',
+    color: '#EF4444',
+    project_id: 'project-1'
+  },
+  {
+    label_id: 'label-5',
+    name: 'feature',
+    color: '#8B5CF6',
+    project_id: 'project-1'
+  }
+];
+
+/**
+ * Mock project members
+ */
+export const mockProjectMembers: Record<string, any[]> = {
+  'project-1': [
+    {
+      user_id: 'user-1',
+      display_name: 'Alice Johnson',
+      email: 'alice@example.com',
+      role: 'admin'
+    },
+    {
+      user_id: 'user-2',
+      display_name: 'Bob Smith',
+      email: 'bob@example.com',
+      role: 'member'
+    },
+    {
+      user_id: 'user-3',
+      display_name: 'Charlie Brown',
+      email: 'charlie@example.com',
+      role: 'member'
+    }
+  ],
+  'project-2': [
+    {
+      user_id: 'user-2',
+      display_name: 'Bob Smith',
+      email: 'bob@example.com',
+      role: 'admin'
+    }
+  ],
+  'project-3': [
+    {
+      user_id: 'user-1',
+      display_name: 'Alice Johnson',
+      email: 'alice@example.com',
+      role: 'admin'
+    }
+  ]
+};

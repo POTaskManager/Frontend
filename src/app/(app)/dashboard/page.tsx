@@ -1,13 +1,16 @@
 'use client';
 
+import { CreateProjectModal } from '@/components/projects/create-project-modal';
+import { Button } from '@/components/ui/button';
 import { useProjectStore } from '@/store/project-store';
 import type { Route } from 'next';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
   const { projects, projectsLoading, fetchProjects } = useProjectStore();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     fetchProjects();

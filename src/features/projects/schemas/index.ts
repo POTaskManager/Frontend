@@ -16,11 +16,11 @@ export const taskSchema = z.object({
   sprintId: z.string().optional(),
   createdBy: z.string(),
   title: z.string(),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   status: z.enum(['todo', 'in_progress', 'review', 'done']),
   priority: z.enum(['low', 'medium', 'high', 'urgent']),
-  dueDate: z.string().optional(),
-  assignedTo: z.string().optional(),
+  dueDate: z.string().nullable().optional(),
+  assignedTo: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string()
 });

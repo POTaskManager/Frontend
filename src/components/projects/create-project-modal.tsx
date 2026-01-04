@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
+import { getApiUrl } from '@/utils/api';
 
 interface TeamMember {
   email: string;
@@ -53,7 +54,7 @@ export function CreateProjectModal({ isOpen, onClose }: { isOpen: boolean; onClo
 
   const createProject = useMutation({
     mutationFn: async (data: CreateProjectData) => {
-      const res = await fetch('/api/projects', {
+      const res = await fetch(getApiUrl('/projects'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -193,20 +194,21 @@ export function CreateProjectModal({ isOpen, onClose }: { isOpen: boolean; onClo
       ...formData,
       members: formData.members.filter((_, i) => i !== index)
     });
-    setMemberErrors({
-      ...memberErrors,
-      [index]: undefined
-    });
+    const newErrors = { ...memberErrors };
+    delete newErrors[index];
+    setMemberErrors(newErrors);
   };
 
   const handleMemberChange = (index: number, field: keyof TeamMember, value: string) => {
     const updatedMembers = [...formData.members];
-    updatedMembers[index] = { ...updatedMembers[index], [field]: value };
+    updatedMembers[index] = { ...updatedMembers[index], [field]: value } as TeamMember;
     setFormData({ ...formData, members: updatedMembers });
 
     // Clear error for this member
     if (memberErrors[index]) {
-      setMemberErrors({ ...memberErrors, [index]: undefined });
+      const newErrors = { ...memberErrors };
+      delete newErrors[index];
+      setMemberErrors(newErrors);
     }
   };
 

@@ -60,7 +60,7 @@ export function MultiSelect<T>({
           {value.length === 0
             ? placeholder
             : value.length === 1
-              ? getOptionLabel(selectedOptions[0])
+              ? getOptionLabel(selectedOptions[0]!)
               : `${value.length} selected`}
         </span>
         <svg

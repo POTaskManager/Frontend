@@ -10,6 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { getApiUrl } from '@/utils/api';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -66,7 +67,7 @@ function LoginContent() {
     setError(null);
     
     try {
-      const res = await fetch('/api/proxy/api/auth/login', {
+      const res = await fetch(getApiUrl('/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

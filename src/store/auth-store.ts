@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getApiUrl } from '@/utils/api';
 
 export interface User {
   id: string;
@@ -34,7 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       set({ isLoading: true });
 
-      const res = await fetch('/api/proxy/api/auth/me', {
+      const res = await fetch(getApiUrl('/auth/me'), {
         credentials: 'include',
       });
 
@@ -62,7 +63,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      await fetch('/api/proxy/api/auth/logout', {
+      await fetch(getApiUrl('/auth/logout'), {
         method: 'POST',
         credentials: 'include',
       });

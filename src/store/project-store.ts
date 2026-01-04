@@ -1,5 +1,6 @@
 import { Project } from '@/types';
 import { create } from 'zustand';
+import { getApiUrl } from '@/utils/api';
 
 export type BackendProject = Project;
 
@@ -18,7 +19,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
   fetchProjects: async () => {
     set({ projectsLoading: true, projectsError: null });
     try {
-      const res = await fetch('/api/proxy/api/projects', {
+      const res = await fetch(getApiUrl('/projects'), {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to fetch projects');

@@ -3,7 +3,6 @@
 import { forwardRef, InputHTMLAttributes, useState } from 'react';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
 
 export interface DatePickerProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
   value: string | null;
