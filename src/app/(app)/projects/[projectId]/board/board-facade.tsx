@@ -1,6 +1,13 @@
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
-import { useUpdateTaskMutation, useTasksQuery, useSprintsQuery, Task } from '@/features/projects';
+import {
+  useUpdateTaskMutation,
+  useCreateTaskMutation,
+  useTasksQuery,
+  useSprintsQuery,
+  Task,
+  CreateTaskInput,
+} from '@/features/projects';
 
 export function useBoardFacade() {
   const params = useParams();
@@ -24,6 +31,7 @@ export function useBoardFacade() {
   } = useTasksQuery(projectId, selectedSprintId);
 
   const updateTaskMutation = useUpdateTaskMutation(projectId, selectedSprintId);
+  const createTaskMutation = useCreateTaskMutation(projectId, selectedSprintId);
 
   const changeSprint = (sprintId: string) => {
     router.push(`/projects/${projectId}/board?sprint=${sprintId}`);
@@ -31,6 +39,10 @@ export function useBoardFacade() {
 
   const updateTask = (taskId: string, state: Task['status']) => {
     updateTaskMutation.mutate({ taskId, state });
+  };
+
+  const createTask = (input: CreateTaskInput) => {
+    return createTaskMutation.mutateAsync(input);
   };
 
   // Auto-select first sprint and update URL if no sprint is selected
@@ -52,6 +64,9 @@ export function useBoardFacade() {
     error,
     selectedSprintId,
     updateTask,
+    createTask,
     changeSprint,
+    // temporarily expose projectId
+    projectId,
   };
 }

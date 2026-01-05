@@ -2,11 +2,10 @@ import { z } from 'zod';
 
 export const sprintSchema = z.object({
   id: z.string(),
-  projectId: z.string(),
   name: z.string(),
-  startDate: z.string(),
-  endDate: z.string(),
-  goal: z.string().optional()
+  startDate: z.string().nullable(),
+  endDate: z.string().nullable(),
+  statusId: z.string().optional()
 });
 
 export const sprintsSchema = z.array(sprintSchema);

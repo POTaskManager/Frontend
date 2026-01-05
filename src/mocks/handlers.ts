@@ -69,28 +69,28 @@ export const handlers = [
   // }),
 
   // Projects (legacy)
-  http.get('/api/projects', async () => {
-    return HttpResponse.json(mockProjects);
-  }),
-  http.get('/api/projects/:projectId', async ({ params }) => {
-    const project = mockProjects.find((p) => p.id === params.projectId);
-    if (!project) {
-      return HttpResponse.json({ error: 'Project not found' }, { status: 404 });
-    }
-    return HttpResponse.json(project);
-  }),
+  // http.get('/api/projects', async () => {
+  //   return HttpResponse.json(mockProjects);
+  // }),
+  // http.get('/api/projects/:projectId', async ({ params }) => {
+  //   const project = mockProjects.find((p) => p.id === params.projectId);
+  //   if (!project) {
+  //     return HttpResponse.json({ error: 'Project not found' }, { status: 404 });
+  //   }
+  //   return HttpResponse.json(project);
+  // }),
 
   // New proxy-backed projects endpoint
-  http.get('/api/proxy/api/projects', async () => {
-    return HttpResponse.json(mockProjects);
-  }),
-  http.get('/api/proxy/api/projects/:projectId', async ({ params }) => {
-    const project = mockProjects.find((p) => p.id === normalizeProjectId(params.projectId as string));
-    if (!project) {
-      return HttpResponse.json({ error: 'Project not found' }, { status: 404 });
-    }
-    return HttpResponse.json(project);
-  }),
+  // http.get('/api/proxy/api/projects', async () => {
+  //   return HttpResponse.json(mockProjects);
+  // }),
+  // http.get('/api/proxy/api/projects/:projectId', async ({ params }) => {
+  //   const project = mockProjects.find((p) => p.id === normalizeProjectId(params.projectId as string));
+  //   if (!project) {
+  //     return HttpResponse.json({ error: 'Project not found' }, { status: 404 });
+  //   }
+  //   return HttpResponse.json(project);
+  // }),
 
   // Legacy board tasks
   http.get('/api/projects/:projectId/board/tasks', async ({ params }) => {
@@ -124,10 +124,10 @@ export const handlers = [
   }),
 
   // New: sprints per project
-  http.get('/api/proxy/api/projects/:projectId/sprints', async ({ params }) => {
-    const projectId = normalizeProjectId(params.projectId as string);
-    return HttpResponse.json(getSprintsByProjectId(projectId));
-  }),
+  // http.get('/api/proxy/api/projects/:projectId/sprints', async ({ params }) => {
+  //   const projectId = normalizeProjectId(params.projectId as string);
+  //   return HttpResponse.json(getSprintsByProjectId(projectId));
+  // }),
 
   // New: tasks per sprint
   http.get('/api/proxy/api/projects/:projectId/sprints/:sprintId/tasks', async ({ params }) => {
