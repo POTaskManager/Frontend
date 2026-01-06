@@ -12,6 +12,7 @@ import {
 export function useBoardFacade() {
   const params = useParams();
   const projectId = params.projectId as string;
+  const boardId = `board-${projectId.replace('project-', '')}`; // Derive boardId from projectId
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -68,5 +69,6 @@ export function useBoardFacade() {
     changeSprint,
     // temporarily expose projectId
     projectId,
+    boardId,
   };
 }

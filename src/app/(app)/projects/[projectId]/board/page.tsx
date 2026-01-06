@@ -17,6 +17,7 @@ export default function ProjectBoardPage() {
     error,
     selectedSprintId,
     projectId,
+    boardId,
     changeSprint,
     updateTask,
     createTask,
@@ -29,6 +30,8 @@ export default function ProjectBoardPage() {
     'medium',
   );
   const [newTaskState, setNewTaskState] = useState<string>('todo');
+  const [newTaskAssigneeId, setNewTaskAssigneeId] = useState<string>('');
+  const [newTaskDueDate, setNewTaskDueDate] = useState<string>('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
 
   // Create task handler
@@ -44,6 +47,9 @@ export default function ProjectBoardPage() {
         priority: newTaskPriority,
         state: newTaskState,
         sprintId: selectedSprintId,
+        boardId: boardId,
+        assigneeId: newTaskAssigneeId || undefined,
+        dueDate: newTaskDueDate || undefined,
       });
 
       setShowCreateTask(false);
@@ -51,6 +57,8 @@ export default function ProjectBoardPage() {
       setNewTaskDescription('');
       setNewTaskPriority('medium');
       setNewTaskState('todo');
+      setNewTaskAssigneeId('');
+      setNewTaskDueDate('');
     } catch (error) {
       console.error('Error creating task:', error);
       alert('Failed to create task');
@@ -209,7 +217,38 @@ export default function ProjectBoardPage() {
                     <option value="in_progress">In Progress</option>
                     <option value="review">Review</option>
                     <option value="done">Done</option>
+                    <option value="blocked">Blocked</option>
                   </select>
+                </div>
+              </div>
+              <div className="mb-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="taskAssignee" className="mb-1 block text-sm font-medium">
+                    Assignee
+                  </label>
+                  <select
+                    id="taskAssignee"
+                    value={newTaskAssigneeId}
+                    onChange={(e) => setNewTaskAssigneeId(e.target.value)}
+                    className="w-full rounded border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
+                  >
+                    <option value="">Unassigned</option>
+                    <option value="user-1">Alice Johnson</option>
+                    <option value="user-2">Bob Smith</option>
+                    <option value="user-3">Charlie Brown</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="taskDueDate" className="mb-1 block text-sm font-medium">
+                    Due Date
+                  </label>
+                  <input
+                    id="taskDueDate"
+                    type="date"
+                    value={newTaskDueDate}
+                    onChange={(e) => setNewTaskDueDate(e.target.value)}
+                    className="w-full rounded border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
