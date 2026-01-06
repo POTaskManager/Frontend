@@ -118,4 +118,25 @@ export interface ChatReadReceipt {
   readAt: string;
 }
 
+export interface ProjectInvitation {
+  id: string;
+  projectId: string;
+  email: string;
+  role: RoleName;
+  token: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  invitedBy: string;
+  createdAt: string;
+  expiresAt?: string;
+  project?: {
+    id: string;
+    name: string;
+  };
+  inviter?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 

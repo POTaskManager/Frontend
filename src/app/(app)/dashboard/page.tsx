@@ -4,6 +4,9 @@ import { useProjectStore } from '@/store/project-store';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { InvitationList } from '@/components/invitations/InvitationList';
+import { invitationService } from '@/lib/invitation-service';
+import { ProjectInvitation } from '@/types';
 
 export default function DashboardPage() {
   const { projects, projectsLoading, fetchProjects, createProject } = useProjectStore();
@@ -11,10 +14,25 @@ export default function DashboardPage() {
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [invitations, setInvitations] = useState<ProjectInvitation[]>([]);
+  const [invitationsLoading, setInvitationsLoading] = useState(true);
 
   useEffect(() => {
     fetchProjects();
+    fetchInvitations();
   }, [fetchProjects]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchInvitations = async () => {
+    try {
+      setInvitationsLoading(true);
+      const data = await invitationService.getMyInvitations();
+      setInvitations(data);
+    } catch (error) {
+      console.error('Error fetching invitations:', error);
+    } finally {
+      setInvitationsLoading(false);
+    }
+  };
   
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +120,20 @@ export default function DashboardPage() {
             </form>
           </div>
         </div>
+      )}
+      
+      {/* Invitations Section */}
+      {!invitationsLoading && invitations.length > 0 && (
+        <section className="mt-6 rounded border p-4 bg-blue-50 dark:bg-blue-900/20">
+          <h2 className="font-medium text-lg mb-4">Pending Invitations</h2>
+          <InvitationList 
+            invitations={invitations} 
+            onInvitationUpdated={() => {
+              fetchInvitations();
+              fetchProjects();
+            }} 
+          />
+        </section>
       )}
       
       <div className="mt-6 grid gap-6 md:grid-cols-2">
