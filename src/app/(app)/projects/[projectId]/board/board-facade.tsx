@@ -7,6 +7,7 @@ import {
   useSprintsQuery,
   Task,
   CreateTaskInput,
+  UpdateTaskInput,
 } from '@/features/projects';
 
 export function useBoardFacade() {
@@ -42,6 +43,10 @@ export function useBoardFacade() {
     updateTaskMutation.mutate({ taskId, state });
   };
 
+  const updateFullTask = (input: UpdateTaskInput) => {
+    return updateTaskMutation.mutateAsync(input);
+  };
+
   const createTask = (input: CreateTaskInput) => {
     return createTaskMutation.mutateAsync(input);
   };
@@ -65,6 +70,7 @@ export function useBoardFacade() {
     error,
     selectedSprintId,
     updateTask,
+    updateFullTask,
     createTask,
     changeSprint,
     // temporarily expose projectId

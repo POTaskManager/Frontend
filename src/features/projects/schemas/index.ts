@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const sprintSchema = z.object({
   id: z.string(),
+  projectId: z.string().optional(),
   name: z.string(),
   startDate: z.string().nullable(),
   endDate: z.string().nullable(),

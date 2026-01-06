@@ -255,8 +255,8 @@ export function getTasksByProjectId(projectId: string): Task[] {
 /**
  * Get board by project ID (returns first board or a default)
  */
-export function getBoardByProjectId(projectId: string): Board | undefined {
-  return mockBoards.find((board) => board.projectId === projectId) || mockBoards[0];
+export function getBoardByProjectId(projectId: string): Board {
+  return mockBoards.find((board) => board.projectId === projectId) || mockBoards[0]!;
 }
 
 // Mock sprints per project
@@ -301,4 +301,42 @@ export function getSprintsByProjectId(projectId: string) {
  */
 export function getTasksBySprintId(sprintId: string): Task[] {
   return mockTasks.filter((task) => task.sprintId === sprintId);
+}
+
+// Backend-like Task shape expected by the proxy-backed frontend
+interface BackendTask {
+  id: string;
+  sprintId: string | null;
+  createdBy: string;
+  title: string;
+  description: string | null;
+  status: 'todo' | 'in_progress' | 'review' | 'done';
+  priority: string | null;
+  dueDate: string | null;
+  assignedTo?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function toBackendTask(t: Task, projectIdHint?: string): BackendTask {
+  // derive projectId via board mapping to assign sprint if missing
+  const board = mockBoards.find((b) => b.id === t.boardId);
+  const projectId = projectIdHint || board?.projectId || 'project-1';
+  const sprints = getSprintsByProjectId(projectId);
+  const defaultSprintId = sprints[0]?.id || null;
+  const createdAt = '2024-02-01T00:00:00Z';
+  const updatedAt = '2024-02-05T00:00:00Z';
+  return {
+    id: t.id,
+    sprintId: t.sprintId || defaultSprintId,
+    createdBy: 'user-1',
+    title: t.title,
+    description: t.description || undefined,
+    status: t.status,
+    priority: t.priority || 'medium',
+    dueDate: t.dueDate || undefined,
+    assignedTo: t.assigneeId || undefined,
+    createdAt,
+    updatedAt,
+  } as unknown as BackendTask;
 }

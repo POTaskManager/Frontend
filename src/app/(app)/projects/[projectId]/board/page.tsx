@@ -2,12 +2,14 @@
 
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { Column } from './components/column';
+import { TaskDetailsModal } from './components/task-details-modal';
 import { canMoveTask } from './drag-rules';
 import { useBoardFacade } from './board-facade';
 import { Task } from '@/features/projects';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Route } from 'next';
+import type { UpdateTaskInput } from '@/features/projects/mutations/use-update-task-mutation';
 
 export default function ProjectBoardPage() {
   const {
@@ -20,19 +22,40 @@ export default function ProjectBoardPage() {
     boardId,
     changeSprint,
     updateTask,
+    updateFullTask,
     createTask,
   } = useBoardFacade();
 
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
-  const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high' | 'critical'>(
+  const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high' | 'urgent'>(
     'medium',
   );
   const [newTaskState, setNewTaskState] = useState<string>('todo');
   const [newTaskAssigneeId, setNewTaskAssigneeId] = useState<string>('');
   const [newTaskDueDate, setNewTaskDueDate] = useState<string>('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+
+  // Task details modal state
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showTaskDetails, setShowTaskDetails] = useState(false);
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setShowTaskDetails(true);
+  };
+
+  const handleCloseTaskDetails = () => {
+    setShowTaskDetails(false);
+    setSelectedTask(null);
+  };
+
+  const handleUpdateTask = async (input: UpdateTaskInput) => {
+    if (!selectedTask) return;
+    await updateFullTask(input);
+    handleCloseTaskDetails();
+  };
 
   // Create task handler
   const handleCreateTask = async (e: React.FormEvent) => {
@@ -200,7 +223,7 @@ export default function ProjectBoardPage() {
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
-                    <option value="critical">Critical</option>
+                    <option value="urgent">Urgent</option>
                   </select>
                 </div>
                 <div>
@@ -273,6 +296,15 @@ export default function ProjectBoardPage() {
         </div>
       )}
 
+      {/* Task Details Modal */}
+      {showTaskDetails && selectedTask && (
+        <TaskDetailsModal
+          task={selectedTask}
+          onClose={handleCloseTaskDetails}
+          onUpdate={handleUpdateTask}
+        />
+      )}
+
       <DndContext onDragEnd={onDragEnd}>
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
           {columns.map((state) => (
@@ -282,6 +314,7 @@ export default function ProjectBoardPage() {
               title={titleFor(state)}
               tasks={tasks.filter((t) => t.status === state)}
               allTasks={tasks}
+              onTaskClick={handleTaskClick}
             />
           ))}
         </div>

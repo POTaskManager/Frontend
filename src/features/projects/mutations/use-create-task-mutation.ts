@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/auth-store';
 export type CreateTaskInput = {
   title: string;
   description?: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   state: string;
   sprintId: string;
   boardId: string;

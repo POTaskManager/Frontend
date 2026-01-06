@@ -10,9 +10,10 @@ interface ColumnProps {
   title: string;
   tasks: Task[];
   allTasks: Task[]; // All tasks for validation
+  onTaskClick?: (task: Task) => void;
 }
 
-export function Column({ id, title, tasks, allTasks }: ColumnProps) {
+export function Column({ id, title, tasks, allTasks, onTaskClick }: ColumnProps) {
   const { active } = useDndContext();
   
   // Get the task being dragged from all tasks
@@ -57,7 +58,7 @@ export function Column({ id, title, tasks, allTasks }: ColumnProps) {
       </div>
       <div className="space-y-2">
         {tasks.map((t) => (
-          <Item key={t.id} task={t} />
+          <Item key={t.id} task={t} onClick={onTaskClick} />
         ))}
       </div>
     </div>

@@ -1,72 +1,17 @@
 import { http, HttpResponse } from 'msw';
 import {
-  mockProjects,
   mockTasks,
   getTasksByProjectId,
-  mockBoards,
-  getSprintsByProjectId,
   getTasksBySprintId,
+  toBackendTask,
 } from './data';
 import type { Task as UITask } from '@/types';
-
-// Backend-like Task shape expected by the proxy-backed frontend
-interface BackendTask {
-  id: string;
-  sprintId: string | null;
-  createdBy: string;
-  title: string;
-  description: string | null;
-  status: 'todo' | 'in_progress' | 'review' | 'done';
-  priority: string | null;
-  dueAt: string | null;
-  assignedTo?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-function toBackendTask(t: UITask, projectIdHint?: string): BackendTask {
-  // derive projectId via board mapping to assign sprint if missing
-  const board = mockBoards.find((b) => b.id === t.boardId);
-  const projectId = projectIdHint || board?.projectId || 'project-1';
-  const sprints = getSprintsByProjectId(projectId);
-  const defaultSprintId = sprints[0]?.id || null;
-  const createdAt = '2024-02-01T00:00:00Z';
-  const updatedAt = '2024-02-05T00:00:00Z';
-  return {
-    id: t.id,
-    sprintId: t.sprintId || defaultSprintId,
-    createdBy: 'user-1',
-    title: t.title,
-    description: t.description || null,
-    status: t.status,
-    priority: t.priority || null,
-    dueAt: t.dueDate || null,
-    assignedTo: t.assigneeId,
-    createdAt,
-    updatedAt,
-  };
-}
 
 function normalizeProjectId(projectId: string): string {
   return /^\d+$/.test(projectId) ? `project-${projectId}` : projectId;
 }
 
 export const handlers = [
-  // Existing auth mocks
-  // http.post('/api/auth/login', async () => {
-  //   return HttpResponse.json({ ok: true });
-  // }),
-  // http.get('/api/auth/session', async () => {
-  //   return HttpResponse.json({ user: { email: 'member@example.com', role: 'member' } });
-  // }),
-  //
-  // // New: minimal handlers for proxy-based auth endpoints used by the app
-  // http.get('/api/proxy/api/auth/me', async () => {
-  //   return HttpResponse.json({ user: { id: 'user-1', email: 'member@example.com', name: 'Member', role: 'admin' } });
-  // }),
-  // http.post('/api/proxy/api/auth/logout', async () => {
-  //   return HttpResponse.json({ ok: true });
-  // }),
 
   // Projects (legacy)
   // http.get('/api/projects', async () => {
@@ -110,15 +55,24 @@ export const handlers = [
   http.patch('/api/proxy/api/projects/:projectId/tasks/:id', async ({ params, request }) => {
     const id = params.id as string;
     const body = await request.json() as any;
-    const statusId = body?.status as UITask['status'] | undefined;
 
     const idx = mockTasks.findIndex((t) => t.id === id);
     if (idx === -1) {
       return HttpResponse.json({ error: 'Task not found' }, { status: 404 });
     }
-    if (statusId) {
-      mockTasks[idx] = { ...mockTasks[idx], status: statusId } as UITask;
-    }
+
+    const { status, title, description, priority, assignedTo, dueDate } = body || {};
+
+    mockTasks[idx] = {
+      ...mockTasks[idx],
+      ...(status ? { status } : {}),
+      ...(title !== undefined ? { title } : {}),
+      ...(description !== undefined ? { description } : {}),
+      ...(priority !== undefined ? { priority } : {}),
+      ...(assignedTo !== undefined ? { assigneeId: assignedTo } : {}),
+      ...(dueDate !== undefined ? { dueDate } : {}),
+    } as UITask;
+
     const projectId = normalizeProjectId(params.projectId as string);
     return HttpResponse.json(toBackendTask(mockTasks[idx]!, projectId));
   }),
