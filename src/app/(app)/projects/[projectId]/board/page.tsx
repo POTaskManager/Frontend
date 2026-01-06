@@ -8,6 +8,8 @@ import { Task } from '@/features/projects';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Route } from 'next';
+import { ChatSidebar } from '@/components/chat/ChatSidebar';
+import { ChatPopup } from '@/components/chat/ChatPopup';
 
 export default function ProjectBoardPage() {
   const {
@@ -30,6 +32,9 @@ export default function ProjectBoardPage() {
   );
   const [newTaskState, setNewTaskState] = useState<string>('todo');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+
+  // Chat state
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
 
   // Create task handler
   const handleCreateTask = async (e: React.FormEvent) => {
@@ -95,9 +100,19 @@ export default function ProjectBoardPage() {
     updateTask(taskId, targetColumn);
   };
 
+  const handleChatSelect = (chatId: string) => {
+    setSelectedChatId(chatId);
+  };
+
+  const handleCloseChat = () => {
+    setSelectedChatId(null);
+  };
+
   return (
-    <main className="mx-auto max-w-7xl px-6 py-8">
-      <div className="flex items-center justify-between">
+    <div className="flex h-screen overflow-hidden">
+      {/* Main Board Area */}
+      <main className="flex-1 overflow-auto px-6 py-8">
+        <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Kanban Board</h1>
         <div className="flex items-center gap-3">
           <Link
@@ -234,20 +249,33 @@ export default function ProjectBoardPage() {
         </div>
       )}
 
-      <DndContext onDragEnd={onDragEnd}>
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
-          {columns.map((state) => (
-            <Column
-              key={state}
-              id={state}
-              title={titleFor(state)}
-              tasks={tasks.filter((t) => t.status === state)}
-              allTasks={tasks}
-            />
-          ))}
-        </div>
-      </DndContext>
-    </main>
+        <DndContext onDragEnd={onDragEnd}>
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+            {columns.map((state) => (
+              <Column
+                key={state}
+                id={state}
+                title={titleFor(state)}
+                tasks={tasks.filter((t) => t.status === state)}
+                allTasks={tasks}
+              />
+            ))}
+          </div>
+        </DndContext>
+      </main>
+
+      {/* Chat Sidebar */}
+      <ChatSidebar projectId={projectId} onChatSelect={handleChatSelect} />
+
+      {/* Chat Popup */}
+      {selectedChatId && (
+        <ChatPopup
+          projectId={projectId}
+          chatId={selectedChatId}
+          onClose={handleCloseChat}
+        />
+      )}
+    </div>
   );
 }
 

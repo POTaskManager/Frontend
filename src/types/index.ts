@@ -90,4 +90,32 @@ export interface ActivityLog {
   createdAt: string;
 }
 
+export interface Chat {
+  id: string;
+  projectId: string;
+  name: string;
+  participantIds: string[];
+  createdById: string;
+  lastMessageAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  chatId: string;
+  userId: string;
+  message: string;
+  files?: any[];
+  user: any;
+  createdAt: string;
+}
+
+export interface ChatReadReceipt {
+  chatId: string;
+  messageId: string;
+  userId: string;
+  readAt: string;
+}
+
 
