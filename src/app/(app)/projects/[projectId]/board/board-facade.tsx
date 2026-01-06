@@ -8,6 +8,16 @@ import {
   Task,
   CreateTaskInput,
 } from '@/features/projects';
+import { useQuery } from '@tanstack/react-query';
+
+interface ProjectStatus {
+  id: string;
+  name: string;
+  typeId: number;
+  columnId: string;
+  columnName: string;
+  columnOrder: number;
+}
 
 export function useBoardFacade() {
   const params = useParams();
@@ -30,29 +40,37 @@ export function useBoardFacade() {
     error: tasksError,
   } = useTasksQuery(projectId, selectedSprintId);
 
+  const { data: statuses = [] } = useQuery<ProjectStatus[]>({
+    queryKey: ['statuses', projectId],
+    queryFn: async () => {
+      const res = await fetch(`/api/proxy/api/projects/${projectId}/statuses`, {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to fetch statuses');
+      return res.json();
+    },
+  });
+
   const updateTaskMutation = useUpdateTaskMutation(projectId, selectedSprintId);
   const createTaskMutation = useCreateTaskMutation(projectId, selectedSprintId);
 
-  const changeSprint = (sprintId: string) => {
-    router.push(`/projects/${projectId}/board?sprint=${sprintId}`);
+  const changeSprint = (sprintId: string | null) => {
+    if (sprintId) {
+      router.push(`/projects/${projectId}/board?sprint=${sprintId}`);
+    } else {
+      router.push(`/projects/${projectId}/board`);
+    }
   };
 
-  const updateTask = (taskId: string, state: Task['status']) => {
-    updateTaskMutation.mutate({ taskId, state });
+  const updateTask = (taskId: string, statusId: string) => {
+    updateTaskMutation.mutate({ taskId, statusId });
   };
 
   const createTask = (input: CreateTaskInput) => {
     return createTaskMutation.mutateAsync(input);
   };
 
-  // Auto-select first sprint and update URL if no sprint is selected
-  useEffect(() => {
-    if (!selectedSprintId && sprints.length > 0) {
-      const firstSprintId = sprints[0]?.id;
-      router.replace(`/projects/${projectId}/board?sprint=${firstSprintId}`);
-    }
-  });
-  // }, [sprints, selectedSprintId, router, projectId]);
+  // No auto-selection - show all tasks by default when no sprint is selected
 
   const isLoading = sprintsLoading || tasksLoading;
   const error = sprintsError || tasksError;
@@ -60,6 +78,7 @@ export function useBoardFacade() {
   return {
     sprints,
     tasks,
+    statuses,
     isLoading,
     error,
     selectedSprintId,

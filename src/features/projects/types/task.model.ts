@@ -3,15 +3,11 @@ import { z } from 'zod';
 
 export type BackendTask = z.infer<typeof taskSchema>;
 
-export type TaskState = BackendTask['status'];
+export type TaskState = BackendTask['statusId'];
 
-// UI Task model extends backend fields and adds a derived `state` for board logic.
+// UI Task model - directly use backend model
 export type Task = BackendTask;
 
 export function mapFromBackend(t: BackendTask): Task {
-  const state = (t.status as Task['status']) ?? 'todo';
-  return {
-    ...t,
-    state,
-  } as unknown as Task;
+  return t;
 }

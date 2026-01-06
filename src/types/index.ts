@@ -128,6 +128,11 @@ export interface ProjectInvitation {
   invitedBy: string;
   createdAt: string;
   expiresAt?: string;
+  // Backend returns flat fields
+  projectName?: string;
+  inviterName?: string;
+  roleName?: string;
+  // Frontend may also use nested objects
   project?: {
     id: string;
     name: string;

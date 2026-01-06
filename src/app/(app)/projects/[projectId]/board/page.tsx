@@ -5,7 +5,7 @@ import { Column } from './components/column';
 import { canMoveTask } from './drag-rules';
 import { useBoardFacade } from './board-facade';
 import { Task } from '@/features/projects';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Route } from 'next';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
@@ -15,6 +15,7 @@ export default function ProjectBoardPage() {
   const {
     tasks,
     sprints,
+    statuses,
     isLoading,
     error,
     selectedSprintId,
@@ -30,8 +31,18 @@ export default function ProjectBoardPage() {
   const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high' | 'critical'>(
     'medium',
   );
-  const [newTaskState, setNewTaskState] = useState<string>('todo');
+  // Use first "To Do" status as default, or first status if none found
+  const defaultStatus = statuses.find(s => s.columnName === 'To Do') || statuses[0];
+  const [newTaskState, setNewTaskState] = useState<string>(defaultStatus?.id || '');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+
+  // Update state when statuses load
+  useEffect(() => {
+    if (statuses.length > 0 && !newTaskState) {
+      const todoStatus = statuses.find(s => s.columnName === 'To Do') || statuses[0];
+      if (todoStatus) setNewTaskState(todoStatus.id);
+    }
+  }, [statuses, newTaskState]);
 
   // Chat state
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -39,7 +50,7 @@ export default function ProjectBoardPage() {
   // Create task handler
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskTitle.trim() || !selectedSprintId) return;
+    if (!newTaskTitle.trim()) return;
 
     setIsCreatingTask(true);
     try {
@@ -48,14 +59,15 @@ export default function ProjectBoardPage() {
         description: newTaskDescription || undefined,
         priority: newTaskPriority,
         state: newTaskState,
-        sprintId: selectedSprintId,
+        sprintId: selectedSprintId || undefined,
       });
 
       setShowCreateTask(false);
       setNewTaskTitle('');
       setNewTaskDescription('');
       setNewTaskPriority('medium');
-      setNewTaskState('todo');
+      const todoStatus = statuses.find(s => s.columnName === 'To Do') || statuses[0];
+      setNewTaskState(todoStatus?.id || '');
     } catch (error) {
       console.error('Error creating task:', error);
       alert('Failed to create task');
@@ -82,22 +94,42 @@ export default function ProjectBoardPage() {
     );
   }
 
-  const columns: Task['status'][] = ['todo', 'in_progress', 'review', 'done'];
+  // Group statuses by columnName to get unique columns
+  const columnNames = Array.from(new Set(statuses.map(s => s.columnName)));
+  const columns = columnNames.map(columnName => ({
+    name: columnName,
+    statuses: statuses.filter(s => s.columnName === columnName)
+  }));
 
   const onDragEnd = (e: DragEndEvent) => {
     const taskId = e.active.id as string;
-    const targetColumn = e.over?.id as Task['status'] | undefined;
+    const targetStatusId = e.over?.id as string | undefined;
 
-    if (!targetColumn) return;
+    console.log('DragEnd event:', {
+      taskId,
+      targetStatusId,
+      overData: e.over?.data?.current
+    });
 
-    const draggedTask = tasks.find((t) => t.id === taskId);
-    if (!draggedTask) return;
-
-    if (!canMoveTask(draggedTask.status, targetColumn)) {
-      console.warn(`Cannot move task from ${draggedTask.status} to ${targetColumn}`);
+    if (!targetStatusId) {
+      console.warn('No target status ID');
       return;
     }
-    updateTask(taskId, targetColumn);
+
+    const draggedTask = tasks.find((t) => t.id === taskId);
+    if (!draggedTask) {
+      console.warn('Task not found:', taskId);
+      return;
+    }
+
+    // Don't update if dropping on the same status
+    if (draggedTask.statusId === targetStatusId) {
+      console.log('Task already in this status');
+      return;
+    }
+
+    console.log('Updating task:', taskId, 'from', draggedTask.statusId, 'to', targetStatusId);
+    updateTask(taskId, targetStatusId);
   };
 
   const handleChatSelect = (chatId: string) => {
@@ -123,8 +155,7 @@ export default function ProjectBoardPage() {
           </Link>
           <button
             onClick={() => setShowCreateTask(true)}
-            disabled={!selectedSprintId}
-            className="rounded bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+            className="rounded bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
           >
             + New Task
           </button>
@@ -138,11 +169,10 @@ export default function ProjectBoardPage() {
               value={selectedSprintId || ''}
               onChange={(e) => {
                 const sprintId = e.target.value;
-                if (sprintId) {
-                  changeSprint(sprintId);
-                }
+                changeSprint(sprintId || null);
               }}
             >
+              <option value="">All Tasks</option>
               {sprints.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -220,10 +250,11 @@ export default function ProjectBoardPage() {
                     onChange={(e) => setNewTaskState(e.target.value)}
                     className="w-full rounded border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
                   >
-                    <option value="todo">To Do</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="review">Review</option>
-                    <option value="done">Done</option>
+                    {statuses.map(status => (
+                      <option key={status.id} value={status.id}>
+                        {status.name} ({status.columnName})
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -251,15 +282,26 @@ export default function ProjectBoardPage() {
 
         <DndContext onDragEnd={onDragEnd}>
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
-            {columns.map((state) => (
-              <Column
-                key={state}
-                id={state}
-                title={titleFor(state)}
-                tasks={tasks.filter((t) => t.status === state)}
-                allTasks={tasks}
-              />
-            ))}
+            {columns.map((column) => {
+              // Get all statusIds for this column
+              const columnStatusIds = column.statuses.map(s => s.id);
+              // Filter tasks that have any of these statusIds
+              const columnTasks = tasks.filter(t => columnStatusIds.includes(t.statusId));
+              
+              // Use first statusId as the drop target ID
+              const dropTargetId = columnStatusIds[0] || column.name;
+              
+              return (
+                <Column
+                  key={column.name}
+                  id={dropTargetId}
+                  title={column.name}
+                  tasks={columnTasks}
+                  allTasks={tasks}
+                  statusIds={columnStatusIds}
+                />
+              );
+            })}
           </div>
         </DndContext>
       </main>
@@ -277,9 +319,4 @@ export default function ProjectBoardPage() {
       )}
     </div>
   );
-}
-
-function titleFor(s: Task['status']) {
-  if (s === 'in_progress') return 'In Progress';
-  return s[0]?.toUpperCase() + s.slice(1);
 }

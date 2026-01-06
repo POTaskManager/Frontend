@@ -62,13 +62,13 @@ export function InvitationList({ invitations, onInvitationUpdated }: InvitationL
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3 className="font-semibold text-lg text-gray-900">
-                {invitation.project?.name || 'Project Invitation'}
+                {invitation.project?.name || invitation.projectName || 'Project Invitation'}
               </h3>
               <p className="text-sm text-gray-600 mt-1">
-                Invited by: {invitation.inviter?.name || invitation.inviter?.email || 'Unknown'}
+                Invited by: {invitation.inviter?.name || invitation.inviterName || invitation.inviter?.email || 'Unknown'}
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                Role: <span className="font-medium capitalize">{invitation.role}</span>
+                Role: <span className="font-medium capitalize">{invitation.role || invitation.roleName}</span>
               </p>
               <p className="text-xs text-gray-400 mt-2">
                 Received: {new Date(invitation.createdAt).toLocaleDateString()}
