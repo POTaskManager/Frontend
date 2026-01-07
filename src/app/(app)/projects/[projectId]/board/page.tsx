@@ -2,6 +2,7 @@
 
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { Column } from './components/column';
+import { TaskDetailsModal } from './components/task-details-modal';
 import { canMoveTask } from './drag-rules';
 import { useBoardFacade } from './board-facade';
 import { Task } from '@/features/projects';
@@ -10,7 +11,7 @@ import Link from 'next/link';
 import { Route } from 'next';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatPopup } from '@/components/chat/ChatPopup';
-
+import type { UpdateTaskInput } from '@/features/projects/mutations/use-update-task-mutation';import { useProjectMembersQuery } from '@/features/projects/queries/use-project-members-query';
 export default function ProjectBoardPage() {
   const {
     tasks,
@@ -22,18 +23,23 @@ export default function ProjectBoardPage() {
     projectId,
     changeSprint,
     updateTask,
+    updateFullTask,
     createTask,
   } = useBoardFacade();
+
+  const { data: projectMembers = [] } = useProjectMembersQuery(projectId || '');
 
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
-  const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high' | 'critical'>(
+  const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high' | 'critical' | 'urgent'>(
     'medium',
   );
   // Use first "To Do" status as default, or first status if none found
   const defaultStatus = statuses.find(s => s.columnName === 'To Do') || statuses[0];
   const [newTaskState, setNewTaskState] = useState<string>(defaultStatus?.id || '');
+  const [newTaskAssignedTo, setNewTaskAssignedTo] = useState<string>('');
+  const [newTaskDueDate, setNewTaskDueDate] = useState<string>('');
   const [isCreatingTask, setIsCreatingTask] = useState(false);
 
   // Update state when statuses load
@@ -46,6 +52,26 @@ export default function ProjectBoardPage() {
 
   // Chat state
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+
+  // Task details modal state
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showTaskDetails, setShowTaskDetails] = useState(false);
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setShowTaskDetails(true);
+  };
+
+  const handleCloseTaskDetails = () => {
+    setShowTaskDetails(false);
+    setSelectedTask(null);
+  };
+
+  const handleUpdateTask = async (input: UpdateTaskInput) => {
+    if (!selectedTask) return;
+    await updateFullTask(input);
+    handleCloseTaskDetails();
+  };
 
   // Create task handler
   const handleCreateTask = async (e: React.FormEvent) => {
@@ -60,6 +86,8 @@ export default function ProjectBoardPage() {
         priority: newTaskPriority,
         state: newTaskState,
         sprintId: selectedSprintId || undefined,
+        assignedTo: newTaskAssignedTo || undefined,
+        dueDate: newTaskDueDate || undefined,
       });
 
       setShowCreateTask(false);
@@ -68,6 +96,8 @@ export default function ProjectBoardPage() {
       setNewTaskPriority('medium');
       const todoStatus = statuses.find(s => s.columnName === 'To Do') || statuses[0];
       setNewTaskState(todoStatus?.id || '');
+      setNewTaskAssignedTo('');
+      setNewTaskDueDate('');
     } catch (error) {
       console.error('Error creating task:', error);
       alert('Failed to create task');
@@ -238,6 +268,7 @@ export default function ProjectBoardPage() {
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
                     <option value="critical">Critical</option>
+                    <option value="urgent">Urgent</option>
                   </select>
                 </div>
                 <div>
@@ -250,12 +281,46 @@ export default function ProjectBoardPage() {
                     onChange={(e) => setNewTaskState(e.target.value)}
                     className="w-full rounded border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
                   >
-                    {statuses.map(status => (
+                    {statuses
+                      .filter(s => ['To Do', 'In Progress', 'Review', 'Done'].includes(s.columnName))
+                      .map(status => (
                       <option key={status.id} value={status.id}>
-                        {status.name} ({status.columnName})
+                        {status.name}
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+              <div className="mb-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="taskAssignedTo" className="mb-1 block text-sm font-medium">
+                    Assigned To
+                  </label>
+                  <select
+                    id="taskAssignedTo"
+                    value={newTaskAssignedTo}
+                    onChange={(e) => setNewTaskAssignedTo(e.target.value)}
+                    className="w-full rounded border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
+                  >
+                    <option value="">Unassigned</option>
+                    {projectMembers.map(member => (
+                      <option key={member.userId} value={member.userId}>
+                        {member.userName} ({member.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="taskDueDate" className="mb-1 block text-sm font-medium">
+                    Due Date
+                  </label>
+                  <input
+                    id="taskDueDate"
+                    type="date"
+                    value={newTaskDueDate}
+                    onChange={(e) => setNewTaskDueDate(e.target.value)}
+                    className="w-full rounded border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-700"
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
@@ -280,6 +345,17 @@ export default function ProjectBoardPage() {
         </div>
       )}
 
+      {/* Task Details Modal */}
+      {showTaskDetails && selectedTask && (
+        <TaskDetailsModal
+          task={selectedTask}
+          statuses={statuses}
+          projectId={projectId || ''}
+          onClose={handleCloseTaskDetails}
+          onUpdate={handleUpdateTask}
+        />
+      )}
+
         <DndContext onDragEnd={onDragEnd}>
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
             {columns.map((column) => {
@@ -299,6 +375,7 @@ export default function ProjectBoardPage() {
                   tasks={columnTasks}
                   allTasks={tasks}
                   statusIds={columnStatusIds}
+                  onTaskClick={handleTaskClick}
                 />
               );
             })}

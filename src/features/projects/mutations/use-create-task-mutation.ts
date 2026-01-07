@@ -4,9 +4,11 @@ import { BackendTask, mapFromBackend } from '../types';
 export type CreateTaskInput = {
   title: string;
   description?: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  state: string;
+  priority: 'low' | 'medium' | 'high' | 'critical' | 'urgent';
+  state: string; // statusId
   sprintId?: string;
+  assignedTo?: string;
+  dueDate?: string;
 };
 
 export function useCreateTaskMutation(projectId: string, selectedSprintId: string | null) {
@@ -24,6 +26,8 @@ export function useCreateTaskMutation(projectId: string, selectedSprintId: strin
           priority: input.priority,
           state: input.state,
           sprintId: input.sprintId,
+          assignedTo: input.assignedTo || undefined,
+          dueDate: input.dueDate || undefined,
         }),
       });
       if (!res.ok) throw new Error('Failed to create task');
