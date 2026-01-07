@@ -5,6 +5,7 @@ import {
   useSprintsQuery,
   useTasksQuery,
   useUpdateTaskMutation,
+  UpdateTaskInput,
 } from '@/features/projects';
 import { useQuery } from '@tanstack/react-query';
 
@@ -64,6 +65,10 @@ export function useBoardFacade() {
     updateTaskMutation.mutate({ taskId, statusId });
   };
 
+  const updateFullTask = (input: UpdateTaskInput) => {
+    return updateTaskMutation.mutateAsync(input);
+  };
+
   const createTask = (input: CreateTaskInput) => {
     return createTaskMutation.mutateAsync(input);
   };
@@ -81,6 +86,7 @@ export function useBoardFacade() {
     error,
     selectedSprintId,
     updateTask,
+    updateFullTask,
     createTask,
     changeSprint,
     // temporarily expose projectId
