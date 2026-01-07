@@ -6,7 +6,7 @@ export type CreateTaskInput = {
   description?: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
   state: string;
-  sprintId: string;
+  sprintId?: string;
 };
 
 export function useCreateTaskMutation(projectId: string, selectedSprintId: string | null) {
@@ -31,7 +31,9 @@ export function useCreateTaskMutation(projectId: string, selectedSprintId: strin
       return mapFromBackend(created);
     },
     onSuccess: () => {
+      // Invalidate both current sprint/all tasks view and the general tasks cache
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId, selectedSprintId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
     },
   });
 }

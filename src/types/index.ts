@@ -90,4 +90,58 @@ export interface ActivityLog {
   createdAt: string;
 }
 
+export interface Chat {
+  id: string;
+  projectId: string;
+  name: string;
+  participantIds: string[];
+  createdById: string;
+  lastMessageAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  chatId: string;
+  userId: string;
+  message: string;
+  files?: any[];
+  user: any;
+  createdAt: string;
+}
+
+export interface ChatReadReceipt {
+  chatId: string;
+  messageId: string;
+  userId: string;
+  readAt: string;
+}
+
+export interface ProjectInvitation {
+  id: string;
+  projectId: string;
+  email: string;
+  role: RoleName;
+  token: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  invitedBy: string;
+  createdAt: string;
+  expiresAt?: string;
+  // Backend returns flat fields
+  projectName?: string;
+  inviterName?: string;
+  roleName?: string;
+  // Frontend may also use nested objects
+  project?: {
+    id: string;
+    name: string;
+  };
+  inviter?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 

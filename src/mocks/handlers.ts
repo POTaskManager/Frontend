@@ -16,10 +16,10 @@ interface BackendTask {
   createdBy: string;
   title: string;
   description: string | null;
-  status: 'todo' | 'in_progress' | 'review' | 'done';
-  priority: string | null;
+  statusId: string;
+  priority: number;
   dueAt: string | null;
-  assignedTo?: string;
+  assignedTo: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,16 +32,33 @@ function toBackendTask(t: UITask, projectIdHint?: string): BackendTask {
   const defaultSprintId = sprints[0]?.id || null;
   const createdAt = '2024-02-01T00:00:00Z';
   const updatedAt = '2024-02-05T00:00:00Z';
+  
+  // Map UI status to statusId (using mock status UUIDs)
+  const statusMap: Record<string, string> = {
+    'todo': 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+    'in_progress': 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+    'review': '11111101-0001-4001-8001-000000000003',
+    'done': 'ffffffff-ffff-4fff-8fff-ffffffffffff'
+  };
+  
+  // Map priority string to number
+  const priorityMap: Record<string, number> = {
+    'low': 1,
+    'medium': 2,
+    'high': 3,
+    'critical': 4
+  };
+  
   return {
     id: t.id,
     sprintId: t.sprintId || defaultSprintId,
     createdBy: 'user-1',
     title: t.title,
     description: t.description || null,
-    status: t.status,
-    priority: t.priority || null,
+    statusId: (t as any).statusId || statusMap[t.status] || statusMap['todo'],
+    priority: priorityMap[t.priority || 'medium'] || 2,
     dueAt: t.dueDate || null,
-    assignedTo: t.assigneeId,
+    assignedTo: t.assigneeId || null,
     createdAt,
     updatedAt,
   };
@@ -110,14 +127,15 @@ export const handlers = [
   http.patch('/api/proxy/api/projects/:projectId/tasks/:id', async ({ params, request }) => {
     const id = params.id as string;
     const body = await request.json() as any;
-    const statusId = body?.status as UITask['status'] | undefined;
+    const statusId = body?.statusId as string | undefined;
 
     const idx = mockTasks.findIndex((t) => t.id === id);
     if (idx === -1) {
       return HttpResponse.json({ error: 'Task not found' }, { status: 404 });
     }
     if (statusId) {
-      mockTasks[idx] = { ...mockTasks[idx], status: statusId } as UITask;
+      // Update statusId instead of status
+      mockTasks[idx] = { ...mockTasks[idx], statusId } as any;
     }
     const projectId = normalizeProjectId(params.projectId as string);
     return HttpResponse.json(toBackendTask(mockTasks[idx]!, projectId));

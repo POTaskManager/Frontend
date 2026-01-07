@@ -5,12 +5,12 @@ export function useUpdateTaskMutation(projectId: string, selectedSprintId: strin
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ taskId, state }: { taskId: string; state: Task['status'] }) => {
+    mutationFn: async ({ taskId, statusId }: { taskId: string; statusId: string }) => {
       const res = await fetch(`/api/proxy/api/projects/${projectId}/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ status: state }),
+        body: JSON.stringify({ statusId }),
       });
       if (!res.ok) throw new Error('Failed to update task');
       const updated: BackendTask = await res.json();
@@ -18,6 +18,7 @@ export function useUpdateTaskMutation(projectId: string, selectedSprintId: strin
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId, selectedSprintId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
     },
   });
 }

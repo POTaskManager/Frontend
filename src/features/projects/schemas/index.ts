@@ -12,14 +12,14 @@ export const sprintsSchema = z.array(sprintSchema);
 
 export const taskSchema = z.object({
   id: z.string(),
-  sprintId: z.string().optional(),
+  sprintId: z.string().nullable(),
   createdBy: z.string(),
   title: z.string(),
-  description: z.string().optional(),
-  status: z.enum(['todo', 'in_progress', 'review', 'done']),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']),
-  dueDate: z.string().optional(),
-  assignedTo: z.string().optional(),
+  description: z.string().nullable(),
+  statusId: z.string(),
+  priority: z.number(),
+  dueAt: z.string().nullable(),
+  assignedTo: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string()
 });

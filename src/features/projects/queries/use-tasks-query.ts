@@ -6,8 +6,12 @@ export function useTasksQuery(projectId: string, sprintId: string | null) {
   return useQuery({
     queryKey: ['tasks', projectId, sprintId],
     queryFn: async () => {
-      if (!sprintId) return [];
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/sprints/${sprintId}/tasks`, {
+      // Fetch all tasks when no sprint selected, otherwise fetch sprint tasks
+      const url = sprintId
+        ? `/api/proxy/api/projects/${projectId}/sprints/${sprintId}/tasks`
+        : `/api/proxy/api/projects/${projectId}/tasks`;
+      
+      const res = await fetch(url, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to fetch tasks');
@@ -15,6 +19,6 @@ export function useTasksQuery(projectId: string, sprintId: string | null) {
       const parsed: BackendTask[] = tasksSchema.parse(data);
       return parsed.map(mapFromBackend);
     },
-    enabled: !!projectId && !!sprintId,
+    enabled: !!projectId,
   });
 }
