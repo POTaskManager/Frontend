@@ -8,12 +8,11 @@ interface ColumnProps {
   id: string; // Column name used as drop target
   title: string;
   tasks: Task[];
-  allTasks: Task[];
   statusIds: string[]; // All statusIds that belong to this column
   onTaskClick?: (task: Task) => void;
 }
 
-export function Column({ id, title, tasks, allTasks, statusIds, onTaskClick }: ColumnProps) {
+export function Column({ id, title, tasks, statusIds, onTaskClick }: ColumnProps) {
   // const { active } = useDndContext();
 
   // Get the task being dragged
