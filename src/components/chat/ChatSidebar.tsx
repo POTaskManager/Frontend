@@ -26,12 +26,14 @@ export function ChatSidebar({ projectId, onChatSelect }: ChatSidebarProps) {
     // Fetch chats when component mounts
     fetchChats(projectId);
 
-    // Connect WebSocket
-    connectWebSocket();
+    // Connect WebSocket and join project room
+    connectWebSocket(projectId).catch((error) => {
+      console.error('Failed to connect to WebSocket:', error);
+    });
 
     // Cleanup on unmount
     return () => {
-      disconnectWebSocket();
+      disconnectWebSocket(projectId);
     };
   }, [projectId, fetchChats, connectWebSocket, disconnectWebSocket]);
 

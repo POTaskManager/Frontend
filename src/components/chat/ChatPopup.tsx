@@ -109,7 +109,7 @@ export function ChatPopup({ projectId, chatId, onClose }: ChatPopupProps) {
       {!isMinimized && (
         <>
           {/* Messages - Fixed height for popup */}
-          <div className="h-96 overflow-hidden">
+          <div className="h-96 overflow-auto">
             <MessageList
               messages={currentMessages}
               typingUserIds={currentTypingUsers}

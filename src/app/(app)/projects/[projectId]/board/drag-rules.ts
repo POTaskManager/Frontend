@@ -1,6 +1,6 @@
 import { Task } from '@/features/projects';
 
-export type TaskState = Task['status'];
+export type TaskState = Task['statusId'];
 
 /**
  * Configuration for drag and drop rules

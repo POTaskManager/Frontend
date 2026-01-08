@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { BackendTask, mapFromBackend, Task } from '../types';
+import { BackendTask, mapFromBackend } from '../types';
 
 export function useUpdateTaskMutation(projectId: string, selectedSprintId: string | null) {
   const queryClient = useQueryClient();

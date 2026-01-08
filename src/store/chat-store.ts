@@ -6,23 +6,29 @@ import { chatWs } from '@/lib/chat-websocket';
 interface ChatStore {
   chats: Chat[];
   currentChatId: string | null;
+  openChatId: string | null;
   messages: Record<string, ChatMessage[]>;
   typingUsers: Record<string, Set<string>>;
+  unreadChats: Set<string>; // Set of chatIds with unread messages
   isLoading: boolean;
   isConnected: boolean;
 
   // Actions
   setCurrentChat: (chatId: string | null) => void;
+  setOpenChat: (chatId: string | null) => void;
   fetchChats: (projectId: string) => Promise<void>;
   fetchMessages: (projectId: string, chatId: string) => Promise<void>;
   sendMessage: (projectId: string, chatId: string, content: string) => Promise<void>;
   updateMessage: (projectId: string, messageId: string, content: string) => Promise<void>;
   deleteMessage: (projectId: string, messageId: string, chatId: string) => Promise<void>;
   createChat: (projectId: string, name: string, participantIds: string[]) => Promise<void>;
+  markChatAsRead: (chatId: string) => void;
   
   // WebSocket actions
-  connectWebSocket: () => void;
-  disconnectWebSocket: () => void;
+  connectWebSocket: (projectId?: string) => Promise<void>;
+  disconnectWebSocket: (projectId?: string) => void;
+  joinProject: (projectId: string) => void;
+  leaveProject: (projectId: string) => void;
   joinChat: (projectId: string, chatId: string) => void;
   leaveChat: (chatId: string) => void;
   startTyping: (chatId: string, userName: string) => void;
@@ -31,6 +37,7 @@ interface ChatStore {
 
   // Internal handlers
   handleNewMessage: (data: any) => void;
+  handleChatMessageNotification: (data: any) => void;
   handleMessageUpdated: (data: any) => void;
   handleMessageDeleted: (data: any) => void;
   handleUserTyping: (data: any) => void;
@@ -40,12 +47,30 @@ interface ChatStore {
 export const useChatStore = create<ChatStore>((set, get) => ({
   chats: [],
   currentChatId: null,
+  openChatId: null,
   messages: {},
   typingUsers: {},
+  unreadChats: new Set(),
   isLoading: false,
   isConnected: false,
 
   setCurrentChat: (chatId) => set({ currentChatId: chatId }),
+
+  setOpenChat: (chatId) => {
+    set({ openChatId: chatId });
+    // Mark chat as read when opened
+    if (chatId) {
+      get().markChatAsRead(chatId);
+    }
+  },
+
+  markChatAsRead: (chatId) => {
+    set((state) => {
+      const newUnreadChats = new Set(state.unreadChats);
+      newUnreadChats.delete(chatId);
+      return { unreadChats: newUnreadChats };
+    });
+  },
 
   fetchChats: async (projectId: string) => {
     try {
@@ -136,22 +161,52 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  connectWebSocket: () => {
-    chatWs.connect();
-    
-    // Set up event handlers
-    chatWs.on('new_message', get().handleNewMessage);
-    chatWs.on('message_updated', get().handleMessageUpdated);
-    chatWs.on('message_deleted', get().handleMessageDeleted);
-    chatWs.on('user_typing', get().handleUserTyping);
-    chatWs.on('user_stopped_typing', get().handleUserStoppedTyping);
-    
-    set({ isConnected: true });
+  connectWebSocket: async (projectId?: string) => {
+    try {
+      // Fetch the WebSocket token from the backend
+      const response = await fetch('/api/proxy/api/auth/ws-token', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        console.error('Failed to fetch WebSocket token');
+        return;
+      }
+
+      const { token } = await response.json();
+      
+      // Connect with the token
+      chatWs.connect(token);
+      
+      // Set up event handlers
+      chatWs.on('new_message', get().handleNewMessage);
+      chatWs.on('chat_message_notification', get().handleChatMessageNotification);
+      chatWs.on('message_updated', get().handleMessageUpdated);
+      chatWs.on('message_deleted', get().handleMessageDeleted);
+      chatWs.on('user_typing', get().handleUserTyping);
+      chatWs.on('user_stopped_typing', get().handleUserStoppedTyping);
+      
+      set({ isConnected: true });
+
+      // Join project room if projectId provided
+      if (projectId) {
+        get().joinProject(projectId);
+      }
+    } catch (error) {
+      console.error('Failed to connect WebSocket:', error);
+      set({ isConnected: false });
+    }
   },
 
-  disconnectWebSocket: () => {
+  disconnectWebSocket: (projectId?: string) => {
+    // Leave project room if projectId provided
+    if (projectId) {
+      get().leaveProject(projectId);
+    }
+
     // Remove event handlers
     chatWs.off('new_message', get().handleNewMessage);
+    chatWs.off('chat_message_notification', get().handleChatMessageNotification);
     chatWs.off('message_updated', get().handleMessageUpdated);
     chatWs.off('message_deleted', get().handleMessageDeleted);
     chatWs.off('user_typing', get().handleUserTyping);
@@ -159,6 +214,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     
     chatWs.disconnect();
     set({ isConnected: false });
+  },
+
+  joinProject: (projectId: string) => {
+    chatWs.joinProject(projectId);
+  },
+
+  leaveProject: (projectId: string) => {
+    chatWs.leaveProject(projectId);
   },
 
   joinChat: (projectId: string, chatId: string) => {
@@ -183,12 +246,40 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   handleNewMessage: (data: any) => {
     const { message, chatId } = data;
-    set((state) => ({
-      messages: {
-        ...state.messages,
-        [chatId]: [...(state.messages[chatId] || []), message],
-      },
-    }));
+    set((state) => {
+      // Auto-open chat if it's not currently open
+      const updates: Partial<ChatStore> = {
+        messages: {
+          ...state.messages,
+          [chatId]: [...(state.messages[chatId] || []), message],
+        },
+      };
+
+      // If no chat is currently open, automatically open this chat
+      if (!state.openChatId) {
+        updates.openChatId = chatId;
+      }
+
+      return updates;
+    });
+  },
+
+  handleChatMessageNotification: (data: any) => {
+    const { chatId } = data;
+    const state = get();
+
+    if (state.openChatId === chatId) {
+      // Chat is open, user is viewing it
+      return;
+    }
+
+    // Mark chat as unread only (don't add to messages array)
+    // When user opens the chat, fetchMessages will get all messages in correct order
+    set((state) => {
+      const newUnreadChats = new Set(state.unreadChats);
+      newUnreadChats.add(chatId);
+      return { unreadChats: newUnreadChats };
+    });
   },
 
   handleMessageUpdated: (data: any) => {

@@ -13,6 +13,11 @@ export function MessageList({ messages, typingUserIds }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthStore();
 
+  // Sort messages by createdAt (oldest to newest)
+  const sortedMessages = [...messages].sort((a, b) => {
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
+
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -28,7 +33,7 @@ export function MessageList({ messages, typingUserIds }: MessageListProps) {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {messages.map((message) => {
+      {sortedMessages.map((message) => {
         const isOwn = message.userId === user?.id;
         
         return (
