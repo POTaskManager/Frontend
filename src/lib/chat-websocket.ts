@@ -1,5 +1,4 @@
 import { io, Socket } from 'socket.io-client';
-import { ChatMessage, ChatReadReceipt } from '@/types';
 
 type ChatEventHandler = (data: any) => void;
 
@@ -9,7 +8,16 @@ export class ChatWebSocketService {
   private isConnecting = false;
 
   connect(token?: string) {
-    if (this.socket?.connected || this.isConnecting) {
+    // If already connecting or connected with the same auth state, return
+    if (this.isConnecting) {
+      return;
+    }
+
+    // If socket exists and is connected, but we have a new token, disconnect first
+    if (this.socket?.connected && token) {
+      this.disconnect();
+    } else if (this.socket?.connected) {
+      // Already connected without new token, no need to reconnect
       return;
     }
 
@@ -17,7 +25,7 @@ export class ChatWebSocketService {
 
     // Connect to the /chat namespace
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:4200';
-    
+
     this.socket = io(`${wsUrl}/chat`, {
       transports: ['websocket', 'polling'],
       withCredentials: true,
@@ -25,12 +33,27 @@ export class ChatWebSocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log('Chat WebSocket connected');
+      console.log('Chat WebSocket connected', {
+        socketId: this.socket?.id,
+        connected: this.socket?.connected,
+      });
       this.isConnecting = false;
     });
 
-    this.socket.on('disconnect', () => {
-      console.log('Chat WebSocket disconnected');
+    this.socket.on('disconnect', (reason) => {
+      console.log('Chat WebSocket disconnected', {
+        reason,
+        socketId: this.socket?.id,
+      });
+      this.isConnecting = false;
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('Chat WebSocket connect_error:', {
+        message: error.message,
+        description: (error as any)['description'],
+        context: (error as any)['context'],
+      });
       this.isConnecting = false;
     });
 
@@ -41,8 +64,13 @@ export class ChatWebSocketService {
 
     // Listen to all chat events
     this.socket.on('joined_chat', (data) => this.emit('joined_chat', data));
+    this.socket.on('joined_project', (data) => this.emit('joined_project', data));
     this.socket.on('left_chat', (data) => this.emit('left_chat', data));
+    this.socket.on('left_project', (data) => this.emit('left_project', data));
     this.socket.on('new_message', (data) => this.emit('new_message', data));
+    this.socket.on('chat_message_notification', (data) =>
+      this.emit('chat_message_notification', data),
+    );
     this.socket.on('message_updated', (data) => this.emit('message_updated', data));
     this.socket.on('message_deleted', (data) => this.emit('message_deleted', data));
     this.socket.on('user_typing', (data) => this.emit('user_typing', data));
@@ -56,6 +84,14 @@ export class ChatWebSocketService {
       this.socket = null;
       this.eventHandlers.clear();
     }
+  }
+
+  joinProject(projectId: string) {
+    this.socket?.emit('join_project', { projectId });
+  }
+
+  leaveProject(projectId: string) {
+    this.socket?.emit('leave_project', { projectId });
   }
 
   joinChat(projectId: string, chatId: string) {

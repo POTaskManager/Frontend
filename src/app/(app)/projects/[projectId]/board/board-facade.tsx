@@ -1,12 +1,10 @@
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
 import {
-  useUpdateTaskMutation,
-  useCreateTaskMutation,
-  useTasksQuery,
-  useSprintsQuery,
-  Task,
   CreateTaskInput,
+  useCreateTaskMutation,
+  useSprintsQuery,
+  useTasksQuery,
+  useUpdateTaskMutation,
 } from '@/features/projects';
 import { useQuery } from '@tanstack/react-query';
 

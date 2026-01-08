@@ -19,7 +19,6 @@ export function ChatContainer({ projectId }: ChatContainerProps) {
     currentChatId,
     messages,
     typingUsers,
-    isLoading,
     isConnected,
     setCurrentChat,
     fetchChats,
@@ -39,15 +38,17 @@ export function ChatContainer({ projectId }: ChatContainerProps) {
     // Fetch chats when component mounts
     fetchChats(projectId);
 
-    // Connect WebSocket
-    connectWebSocket();
+    // Connect WebSocket and join project room
+    connectWebSocket(projectId).catch((error) => {
+      console.error('Failed to connect to WebSocket:', error);
+    });
 
     // Cleanup on unmount
     return () => {
       if (currentChatId) {
         leaveChat(currentChatId);
       }
-      disconnectWebSocket();
+      disconnectWebSocket(projectId);
     };
   }, [projectId]);
 
@@ -87,52 +88,49 @@ export function ChatContainer({ projectId }: ChatContainerProps) {
   };
 
   const currentMessages = currentChatId ? messages[currentChatId] || [] : [];
-  const currentTypingUsers = currentChatId ? typingUsers[currentChatId] || new Set<string>() : new Set<string>();
+  const currentTypingUsers = currentChatId
+    ? typingUsers[currentChatId] || new Set<string>()
+    : new Set<string>();
 
   return (
-    <div className="h-full flex">
+    <div className="flex h-full">
       {/* Chat List Sidebar */}
-      <div className="w-80 border-r bg-white flex flex-col">
-        <div className="p-4 border-b bg-gray-50">
+      <div className="flex w-80 flex-col border-r bg-white">
+        <div className="border-b bg-gray-50 p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Chats</h2>
             <button
               onClick={() => setShowCreateChat(true)}
-              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              className="rounded bg-blue-500 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-600"
             >
               New Chat
             </button>
           </div>
           <div className="mt-2 flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            <div
+              className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
+            />
             <span className="text-xs text-gray-600">
               {isConnected ? 'Connected' : 'Disconnected'}
             </span>
           </div>
         </div>
-        <ChatList
-          chats={chats}
-          currentChatId={currentChatId}
-          onSelectChat={handleSelectChat}
-        />
+        <ChatList chats={chats} currentChatId={currentChatId} onSelectChat={handleSelectChat} />
       </div>
 
       {/* Chat Messages Area */}
-      <div className="flex-1 flex flex-col bg-gray-50">
+      <div className="flex flex-1 flex-col bg-gray-50">
         {currentChatId ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b bg-white">
+            <div className="border-b bg-white p-4">
               <h2 className="text-lg font-semibold">
                 {chats.find((c) => c.id === currentChatId)?.name || 'Chat'}
               </h2>
             </div>
 
             {/* Messages */}
-            <MessageList
-              messages={currentMessages}
-              typingUserIds={currentTypingUsers}
-            />
+            <MessageList messages={currentMessages} typingUserIds={currentTypingUsers} />
 
             {/* Message Input */}
             <MessageInput
@@ -143,7 +141,7 @@ export function ChatContainer({ projectId }: ChatContainerProps) {
             />
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex h-full items-center justify-center text-gray-500">
             Select a chat to start messaging
           </div>
         )}
@@ -151,10 +149,7 @@ export function ChatContainer({ projectId }: ChatContainerProps) {
 
       {/* Create Chat Modal */}
       {showCreateChat && (
-        <NewChatModal
-          projectId={projectId}
-          onClose={() => setShowCreateChat(false)}
-        />
+        <NewChatModal projectId={projectId} onClose={() => setShowCreateChat(false)} />
       )}
     </div>
   );

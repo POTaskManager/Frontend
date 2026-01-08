@@ -1,6 +1,6 @@
 'use client';
 
-import { useDroppable, useDndContext } from '@dnd-kit/core';
+import { useDroppable } from '@dnd-kit/core';
 import { Item } from './item';
 import { Task } from '@/features/projects';
 
@@ -12,13 +12,13 @@ interface ColumnProps {
   statusIds: string[]; // All statusIds that belong to this column
 }
 
-export function Column({ id, title, tasks, allTasks, statusIds }: ColumnProps) {
-  const { active } = useDndContext();
-  
+export function Column({ id, title, tasks, statusIds }: ColumnProps) {
+  // const { active } = useDndContext();
+
   // Get the task being dragged
-  const draggedTask = active
-    ? allTasks.find((t) => t.id === active.id as string)
-    : undefined;
+  // const draggedTask = active
+  //   ? allTasks.find((t) => t.id === active.id as string)
+  //   : undefined;
 
   // For now, allow all drops. Can add validation later based on workflow rules
   const isDropAllowed = true;
@@ -28,9 +28,9 @@ export function Column({ id, title, tasks, allTasks, statusIds }: ColumnProps) {
     data: {
       type: 'column',
       columnName: id,
-      statusIds // Pass statusIds so onDragEnd knows which status to use
+      statusIds, // Pass statusIds so onDragEnd knows which status to use
     },
-    disabled: false
+    disabled: false,
   });
 
   // Visual feedback based on drag state
@@ -51,7 +51,6 @@ export function Column({ id, title, tasks, allTasks, statusIds }: ColumnProps) {
       ref={setNodeRef}
       className={`rounded border p-3 transition-colors ${borderColor} ${bgColor}`}
     >
-
       <div className="mb-2 flex items-center justify-between">
         <h2 className="font-medium">{title}</h2>
         <span className="text-xs text-gray-500">{tasks.length}</span>

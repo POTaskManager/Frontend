@@ -2,14 +2,12 @@
 
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { RequireAuth } from '@/components/auth/require-auth';
-import { MswProvider } from '@/components/msw-provider';
 import { Sidebar, type SidebarItem } from '@/components/ui/sidebar';
 import { Topbar } from '@/components/ui/topbar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Route } from 'next';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useProjectStore } from '@/store/project-store';
-
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -27,15 +25,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     ...projects.map((project) => ({
       href: `/projects/${project.id}/board` as Route,
       label: project.name,
-      isSubItem: true
+      isSubItem: true,
     })),
     { href: '/admin/users' as Route, label: 'Users' },
-    { href: '/admin/roles' as Route, label: 'Roles' }
+    { href: '/admin/roles' as Route, label: 'Roles' },
   ];
 
   return (
     <AuthProvider>
-      <MswProvider />
       <QueryClientProvider client={queryClient}>
         <RequireAuth>
           <Topbar />
@@ -48,5 +45,3 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </AuthProvider>
   );
 }
-
-
