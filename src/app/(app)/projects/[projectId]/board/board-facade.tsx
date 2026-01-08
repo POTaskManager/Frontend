@@ -61,8 +61,12 @@ export function useBoardFacade() {
     }
   };
 
-  const updateTask = (taskId: string, statusId: string) => {
-    updateTaskMutation.mutate({ taskId, statusId });
+  const updateTask = (taskId: string, statusId: string, assignedTo?: string | null) => {
+    const updateData: UpdateTaskInput = { taskId, statusId };
+    if (assignedTo !== undefined) {
+      updateData.assignedTo = assignedTo || undefined;
+    }
+    updateTaskMutation.mutate(updateData);
   };
 
   const updateFullTask = (input: UpdateTaskInput) => {

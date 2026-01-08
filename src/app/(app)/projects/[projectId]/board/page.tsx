@@ -168,7 +168,7 @@ export default function ProjectBoardPage() {
     }
 
     console.log('Updating task:', taskId, 'from', draggedTask.statusId, 'to', targetStatusId);
-    updateTask(taskId, targetStatusId);
+    updateTask(taskId, targetStatusId, draggedTask.assignedTo);
   };
 
   const handleChatSelect = (chatId: string) => {
