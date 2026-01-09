@@ -18,7 +18,7 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:4200';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL  || 'http://localhost:4200';
 
 
 export default function LoginPage() {
