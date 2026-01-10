@@ -29,7 +29,7 @@ export function NewChatModal({ projectId, onClose }: NewChatModalProps) {
     // Fetch project members
     const fetchMembers = async () => {
       try {
-        const res = await fetch(`/api/proxy/api/projects/${projectId}/members`, {
+        const res = await fetch(`/api/projects/${projectId}/members`, {
           credentials: 'include',
         });
         if (!res.ok) throw new Error('Failed to fetch members');

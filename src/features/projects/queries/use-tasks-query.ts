@@ -8,8 +8,8 @@ export function useTasksQuery(projectId: string, sprintId: string | null) {
     queryFn: async () => {
       // Fetch all tasks when no sprint selected, otherwise fetch sprint tasks
       const url = sprintId
-        ? `/api/proxy/api/projects/${projectId}/sprints/${sprintId}/tasks`
-        : `/api/proxy/api/projects/${projectId}/tasks`;
+        ? `/api/projects/${projectId}/sprints/${sprintId}/tasks`
+        : `/api/projects/${projectId}/tasks`;
       
       const res = await fetch(url, {
         credentials: 'include',

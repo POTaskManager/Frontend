@@ -6,7 +6,7 @@ export function useSprintsQuery(projectId: string) {
   return useQuery({
     queryKey: ['sprints', projectId],
     queryFn: async () => {
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/sprints`, {
+      const res = await fetch(`/api/projects/${projectId}/sprints`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to fetch sprints');

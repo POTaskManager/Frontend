@@ -1,6 +1,6 @@
 import { Chat, ChatMessage } from '@/types';
 
-const API_BASE = '/api/proxy/api/projects';
+const API_BASE = '/api/projects';
 
 export interface CreateChatDto {
   chatName: string;

@@ -164,7 +164,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   connectWebSocket: async (projectId?: string) => {
     try {
       // Fetch the WebSocket token from the backend
-      const response = await fetch('/api/proxy/api/auth/ws-token', {
+      const response = await fetch('/api/auth/ws-token', {
         credentials: 'include',
       });
 

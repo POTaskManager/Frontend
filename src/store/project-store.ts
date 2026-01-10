@@ -19,7 +19,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
   fetchProjects: async () => {
     set({ projectsLoading: true, projectsError: null });
     try {
-      const res = await fetch('/api/proxy/api/projects', {
+      const res = await fetch('/api/projects', {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to fetch projects');
@@ -35,7 +35,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
 
   createProject: async (name: string, description?: string) => {
     try {
-      const res = await fetch('/api/proxy/api/projects', {
+      const res = await fetch('/api/projects', {
         method: 'POST',
         credentials: 'include',
         headers: {

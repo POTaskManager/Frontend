@@ -11,7 +11,7 @@ export function useProjectMembersQuery(projectId: string) {
   return useQuery<ProjectMember[]>({
     queryKey: ['project-members', projectId],
     queryFn: async () => {
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/members`, {
+      const res = await fetch(`/api/projects/${projectId}/members`, {
         credentials: 'include',
       });
       

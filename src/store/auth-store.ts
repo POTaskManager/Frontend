@@ -34,7 +34,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       set({ isLoading: true });
 
-      const res = await fetch('/api/proxy/api/auth/me', {
+      const res = await fetch('/api/auth/me', {
         credentials: 'include',
       });
 
@@ -62,7 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      await fetch('/api/proxy/api/auth/logout', {
+      await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });

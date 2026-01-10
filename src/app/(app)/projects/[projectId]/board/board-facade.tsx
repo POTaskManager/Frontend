@@ -42,7 +42,7 @@ export function useBoardFacade() {
   const { data: statuses = [] } = useQuery<ProjectStatus[]>({
     queryKey: ['statuses', projectId],
     queryFn: async () => {
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/statuses`, {
+      const res = await fetch(`/api/projects/${projectId}/statuses`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to fetch statuses');

@@ -18,7 +18,7 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL  || 'http://localhost:4200';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 
 export default function LoginPage() {
@@ -66,7 +66,7 @@ function LoginContent() {
     setError(null);
     
     try {
-      const res = await fetch('/api/proxy/api/auth/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -162,5 +162,4 @@ function LoginContent() {
     </main>
   );
 }
-
 
