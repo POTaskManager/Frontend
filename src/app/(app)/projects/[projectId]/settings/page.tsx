@@ -27,7 +27,7 @@ export default function ProjectSettingsPage() {
   const { data: members = [], isLoading } = useQuery({
     queryKey: ['project-members', projectId],
     queryFn: async () => {
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/members`, {
+      const res = await fetch(`/api/projects/${projectId}/members`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('Failed to fetch members');
@@ -39,7 +39,7 @@ export default function ProjectSettingsPage() {
   // Remove member mutation
   const removeMemberMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/members/${userId}`, {
+      const res = await fetch(`/api/projects/${projectId}/members/${userId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -56,7 +56,7 @@ export default function ProjectSettingsPage() {
 
     setIsAdding(true);
     try {
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/members`, {
+      const res = await fetch(`/api/projects/${projectId}/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

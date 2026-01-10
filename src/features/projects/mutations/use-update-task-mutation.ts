@@ -24,7 +24,7 @@ export function useUpdateTaskMutation(projectId: string, selectedSprintId: strin
         ...updateData,
         assignedTo: updateData.assignedTo ? updateData.assignedTo : null,
       };
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/tasks/${taskId}`, {
+      const res = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

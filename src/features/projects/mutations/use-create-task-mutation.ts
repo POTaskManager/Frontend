@@ -16,7 +16,7 @@ export function useCreateTaskMutation(projectId: string, selectedSprintId: strin
 
   return useMutation({
     mutationFn: async (input: CreateTaskInput) => {
-      const res = await fetch(`/api/proxy/api/projects/${projectId}/tasks`, {
+      const res = await fetch(`/api/projects/${projectId}/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
